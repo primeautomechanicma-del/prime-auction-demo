@@ -435,238 +435,42 @@
     update();
   </script>
 
-  <!-- Supabase SDK -->
+  <!-- SDK do Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<!-- Bloco único de JS (funções globais) -->
 <script>
-  // ===== CONFIG SUPABASE =====
-  const SUPABASE_URL  = 'https://jzijuaaqwtmmpuiljhuy.supabase.co';
-  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6aWp1YWFxd3RtbXB1aWxqaHV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4ODc2MDQsImV4cCI6MjA3MTQ2MzYwNH0.5vCINb3Ikmm80WbfoC0yO7e1nHxRiKtZU_Wxf6OdTkI';
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
-// ===== MÓDULO 1 — Cadastro de carros =====
-(function(){
-  // helpers
-  const $ = sel => document.querySelector(sel);
-  const digits = s => String(s||'').replace(/\D/g,'');
-  const money = n => '$' + Number(n||0).toLocaleString();
+const SUPABASE_URL  = 'https://jzijuaaqwtmmpuiljhuy.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6aWp1YWFxd3RtbXB1aWxqaHV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4ODc2MDQsImV4cCI6MjA3MTQ2MzYwNH0.5vCINb3Ikmm80WbfoC0yO7e1nHxRiKtZU_Wxf6OdTkI';
 
-  // máscaras simples em tempo real
-  const kmEl = $('#km');
-  const resEl = $('#reserva');
-  if(kmEl){
-    kmEl.addEventListener('input', e=>{
-      const v = digits(e.target.value);
-      e.target.value = Number(v||0).toLocaleString();
-      $('#resumo-km').textContent = e.target.value ? ${e.target.value} mi : '—';
-    });
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// pega elementos
+const $ = s => document.querySelector(s);
+
+// função principal
+async function salvarVeiculo(){
+  try {
+    const vin     = $('#vin')?.value.trim();
+    const km      = $('#km')?.value.trim();
+    const titulo  = $('#titulo')?.value.trim();
+    const reserva = $('#reserva')?.value.trim();
+
+    if(!vin || vin.length!==17){ alert("VIN inválido (17 caracteres)."); return; }
+
+    const { data, error } = await supabase.from('vehicles').insert([{
+      vin, mileage: Number(km.replace(/\D/g,'')), title_brand: titulo, reserve: Number(reserva.replace(/\D/g,'')), status:'listed'
+    }]).select();
+
+    if(error) throw error;
+    alert("✅ Veículo salvo no Supabase com ID: " + data[0].id);
+
+  } catch(err){
+    alert("Erro ao salvar: " + (err.message||err));
   }
-  if(resEl){
-    resEl.addEventListener('input', e=>{
-      const v = digits(e.target.value);
-      e.target.value = v ? money(v) : '';
-      $('#resumo-reserva').textContent = e.target.value || '—';
-    });
-  }
-  // VIN / título refletem no resumo
-  $('#vin')?.addEventListener('input', e=>{
-    $('#resumo-carro').textContent = e.target.value ? VIN ${e.target.value} : '—';
-  });
-  $('#titulo')?.addEventListener('change', e=>{
-    $('#resumo-titulo').textContent = e.target.value || '—';
-  });
-  ['#disc-motor','#disc-estrutural','#disc-inundacao'].forEach(id=>{
-    $(id)?.addEventListener('change', atualizarResumoDivs);
-  });
-  function atualizarResumoDivs(){
-    const itens = [];
-    if($('#disc-motor')?.checked) itens.push('Sem luz de motor');
-    if($('#disc-estrutural')?.checked) itens.push('Sem danos estruturais');
-    if($('#disc-inundacao')?.checked) itens.push('Sem histórico de inundação');
-    const ul = $('#resumo-divs');
-    ul.innerHTML = itens.length ? itens.map(t=><li>${t}</li>).join('') : '<li>—</li>';
-  }
-  atualizarResumoDivs();
+}
 
-  function setEstadoSalvando(salvando){
-    const btn = $('#btn-save');
-    if(!btn) return;
-    btn.disabled = salvando;
-    btn.textContent = salvando ? 'Salvando…' : 'Salvar no Supabase';
-  }
-  function showMsg(msg, tipo='erro'){
-    const el = $('#seller-alert');
-    if(!el) return;
-    el.style.display = 'block';
-    el.style.color = tipo==='erro' ? '#f87171' : '#a7f3d0';
-    el.textContent = msg;
-  }
-  function clearMsg(){ const el=$('#seller-alert'); if(el){ el.style.display='none'; el.textContent=''; } }
-
-  function validar(){
-    const vin = $('#vin')?.value.trim() || '';
-    const km  = digits($('#km')?.value);
-    const titulo = $('#titulo')?.value || '';
-    const res = digits($('#reserva')?.value);
-
-    if(vin.length !== 17) return { ok:false, msg:'VIN precisa ter 17 caracteres.' };
-    if(!km)               return { ok:false, msg:'Informe a quilometragem.' };
-    if(!titulo)           return { ok:false, msg:'Selecione o título.' };
-    if(!res)              return { ok:false, msg:'Informe a reserva (valor).' };
-
-    return { ok:true, data:{ vin, mileage:Number(km), title_brand:titulo, reserve:Number(res) } };
-  }
-
-  // expõe no escopo global para o onclick do botão
-  window.salvarVeiculo = async function (){
-    clearMsg();
-    const v = validar();
-    if(!v.ok){ showMsg(v.msg,'erro'); return; }
-
-    setEstadoSalvando(true);
-    try{
-      // divulgações como JSON simples (opcional)
-      const disclosures = {
-        no_engine_light: !!$('#disc-motor')?.checked,
-        no_structural:   !!$('#disc-estrutural')?.checked,
-        no_flood:        !!$('#disc-inundacao')?.checked,
-      };
-
-      const { data, error } = await supabase
-        .from('vehicles')
-        .insert([{
-          vin: v.data.vin,
-          mileage: v.data.mileage,
-          title_brand: v.data.title_brand,
-          reserve: v.data.reserve,
-          status: 'listed',
-          disclosures
-        }])
-        .select();
-
-      if(error) throw error;
-
-      // feedback
-      $('#seller-success').style.display = 'inline-flex';
-      showMsg(✅ Veículo salvo! ID ${data[0].id}, 'ok');
-
-      // (Opcional) limpar formulário:
-      // ['#vin','#km','#reserva'].forEach(id=>{ const el=$(id); if(el) el.value=''; });
-    }catch(e){
-      showMsg('Erro ao salvar: ' + (e.message||e), 'erro');
-    }finally{
-      setEstadoSalvando(false);
-    }
-  };
-})();
-  // ===== HELPERS =====
-  function money(n){ return '$' + Number(n||0).toLocaleString(); }
-
-  // ===== TIMER =====
-  let timerId = null;
-  async function carregarLeilaoEIniciarTimer(){
-    const { data, error } = await supabase
-      .from('auctions').select('*').order('created_at',{ascending:false}).limit(1);
-    if(error || !data?.length) return;
-    const auction = data[0];
-
-    // atualiza lance atual na UI
-    const spanL = document.querySelector('#lance-atual');
-    if(spanL) spanL.textContent = money(auction.current_bid||0);
-
-    // inicia/atualiza o contador
-    if(timerId) clearInterval(timerId);
-    const el = document.getElementById('tempo-restante');
-    timerId = setInterval(()=>{
-      if(!el) return;
-      const end = new Date(auction.ends_at).getTime();
-      const now = Date.now();
-      let s = Math.max(0, Math.floor((end - now)/1000));
-      const h = String(Math.floor(s/3600)).padStart(2,'0');
-      const m = String(Math.floor((s%3600)/60)).padStart(2,'0');
-      const ss= String(s%60).padStart(2,'0');
-      el.textContent = ${h}:${m}:${ss};
-      if(s===0) clearInterval(timerId);
-    },1000);
-  }
-
-  // ===== AÇÕES (expostas no escopo global) =====
-  // Salvar veículo + criar leilão (24h)
-  window.salvarVeiculo = async function (){
-    const vin   = document.querySelector('#vin')?.value || '';
-    const kmStr = document.querySelector('#km')?.value || '';
-    const mileage = parseInt(String(kmStr).replace(/\D/g,'')) || 0;
-    const title_brand = document.querySelector('#titulo')?.value || '';
-    const resStr = document.querySelector('#reserva')?.value || '';
-    const reserve = Number(String(resStr).replace(/[^\d.]/g,'')) || 0;
-
-    const { data, error } = await supabase
-      .from('vehicles')
-      .insert([{ vin, mileage, title_brand, reserve, status:'listed' }])
-      .select();
-
-    if(error){ alert('Erro ao salvar: '+error.message); return; }
-
-    const v = data[0];
-    const endsAt = new Date(Date.now() + 24*60*60*1000).toISOString();
-    const { error: eA } = await supabase
-      .from('auctions')
-      .insert([{ vehicle_id: v.id, reserve, ends_at: endsAt }]);
-    if(eA){ alert('Veículo salvo, mas falhou criar leilão: '+eA.message); return; }
-
-    alert('✅ Veículo salvo e leilão criado! ID: '+v.id);
-    carregarLeilaoEIniciarTimer();
-  };
-
-  // Dar lance com valor digitado (mínimo +$100) + anti-sniping (+2min)
-  window.darLanceSimples = async function (){
-    const { data, error } = await supabase
-      .from('auctions').select('*').order('created_at',{ascending:false}).limit(1);
-    if(error || !data?.length){ alert('Crie um veículo/leilão primeiro.'); return; }
-
-    const auction = data[0];
-    const atual   = Number(auction.current_bid || 0);
-
-    const input = document.getElementById('lance-input')?.value || '';
-    const digitado = Number(String(input).replace(/[^\d.]/g,'')) || 0;
-
-    const novo = digitado>0 ? Math.max(digitado, atual+100) : (atual+100);
-
-    const { error: e1 } = await supabase
-      .from('bids').insert([{ auction_id: auction.id, dealer_id: null, amount: novo }]);
-    if(e1){ alert('Erro ao registrar lance: '+e1.message); return; }
-
-    const { error: e2 } = await supabase
-      .from('auctions').update({ current_bid: novo }).eq('id', auction.id);
-    if(e2){ alert('Erro ao atualizar leilão: '+e2.message); return; }
-
-    // Anti-sniping: se restarem < 120s, estende +120s
-    const rest = (new Date(auction.ends_at).getTime() - Date.now())/1000;
-    if(rest < 120){
-      const novoFim = new Date(Date.now() + (rest>0?rest:0)*1000 + 120*1000).toISOString();
-      await supabase.from('auctions').update({ ends_at: novoFim }).eq('id', auction.id);
-    }
-
-    alert('💸 Lance enviado: ' + money(novo));
-  };
-
-  // ===== Realtime (atualiza UI quando houver lance ou mudança no leilão) =====
-  supabase
-    .channel('bids-live')
-    .on('postgres_changes', { event:'INSERT', schema:'public', table:'bids' }, payload => {
-      const amt = Number(payload.new.amount || 0);
-      const span = document.querySelector('#lance-atual');
-      if(span) span.textContent = money(amt);
-      const log = document.querySelector('#log-lances');
-      if(log) log.innerHTML = 'Dealer — '+money(amt)+' • agora<br>' + log.innerHTML;
-    })
-    .on('postgres_changes', { event:'UPDATE', schema:'public', table:'auctions' }, payload => {
-      carregarLeilaoEIniciarTimer(); // reinicia contador quando ends_at muda
-    })
-    .subscribe();
-
-  // inicia contador ao carregar a página
-  carregarLeilaoEIniciarTimer();
+// garante botão
+document.getElementById('btn-save')?.addEventListener('click', salvarVeiculo);
 </script>
 
 </body>
