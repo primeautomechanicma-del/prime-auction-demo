@@ -1,5 +1,102 @@
 <!doctype html>
 <html lang="pt-br">
-  <meta charset="utf-8">
-  <title>Teste</title>
-  <h1 style="font-family:Arial; padding:40px">HELLO — teste simples</h1>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prime Auction — Protótipo</title>
+<style>
+  :root{--bg:#f5f7fb;--txt:#0f172a;--muted:#64748b;--card:#ffffff;--border:#e2e8f0;--accent:#000;}
+  *{box-sizing:border-box}
+  body{margin:0;background:#f5f7fb;color:var(--txt);font:16px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial}
+  .topbar{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--border)}
+  .wrap{max-width:1120px;margin:0 auto;padding:16px 20px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:40px;height:40px;border-radius:14px;background:#000;color:#fff;display:grid;place-items:center;font-weight:700}
+  .muted{color:var(--muted)}
+  .nav{display:grid;gap:12px;margin:16px 0}
+  @media(min-width:720px){.nav{grid-template-columns:repeat(3,1fr)}}
+  @media(min-width:1024px){.nav{grid-template-columns:repeat(7,1fr)}}
+  .tabbtn{padding:12px;border:1px solid var(--border);border-radius:16px;background:#fff;text-align:left;cursor:pointer}
+  .tabbtn.active{outline:2px solid var(--accent)}
+  .card{background:#fff;border:1px solid var(--border);border-radius:18px;box-shadow:0 5px 14px rgba(15,23,42,.04)}
+  .card .hd{padding:16px;border-bottom:1px solid var(--border)}
+  .card .bd{padding:16px}
+  .btn{padding:10px 14px;border-radius:12px;border:1px solid var(--border);background:#0f172a;color:#fff;cursor:pointer}
+  .btn.ghost{background:#f8fafc;color:#0f172a}
+  .hidden{display:none}
+  .title{font-size:20px;font-weight:700}
+  .input,.select,.textarea{width:100%;padding:10px;border:1px solid var(--border);border-radius:12px}
+  .textarea{min-height:96px}
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;height:64px">
+      <div class="brand">
+        <div class="logo">PR</div>
+        <div>
+          <div style="font-weight:600;line-height:1">Prime Auction</div>
+          <div class="muted" style="font-size:12px;margin-top:-2px">Leilões Consumer → Dealer</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="nav" id="nav"></div>
+
+    <!-- Tela exemplo -->
+    <section id="seller" class="section">
+      <div class="card">
+        <div class="hd"><div class="title">Cadastro do carro</div></div>
+        <div class="bd">
+          <label>VIN <input class="input" value="1HGCV1F30JA123456"></label>
+          <label>Quilometragem <input class="input" value="58,500"></label>
+          <label>Reserva <input class="input" value="$17,500"></label>
+          <button class="btn" style="margin-top:10px">Pré-visualizar leilão</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Outras seções -->
+    <section id="auction" class="section hidden"><div class="card"><div class="hd"><div class="title">Página do leilão</div></div><div class="bd">Detalhes do leilão em tempo real…</div></div></section>
+    <section id="dealer" class="section hidden"><div class="card"><div class="hd"><div class="title">Painel do lojista</div></div><div class="bd">Listagem de carros, filtros, watchlist…</div></div></section>
+    <section id="checkout" class="section hidden"><div class="card"><div class="hd"><div class="title">Checkout / Escrow</div></div><div class="bd">Resumo financeiro e pagamento…</div></div></section>
+    <section id="logistics" class="section hidden"><div class="card"><div class="hd"><div class="title">Coleta & Título</div></div><div class="bd">Agendamento da coleta e payoff…</div></div></section>
+    <section id="arbitration" class="section hidden"><div class="card"><div class="hd"><div class="title">Arbitragem</div></div><div class="bd">Disputa, upload de provas e política…</div></div></section>
+    <section id="onboarding" class="section hidden"><div class="card"><div class="hd"><div class="title">Onboarding do lojista</div></div><div class="bd">Licença, EIN, uploads de documentos…</div></div></section>
+  </div>
+
+  <script>
+    const tabs=[
+      {key:'seller',label:'1) Cadastro do carro'},
+      {key:'auction',label:'2) Página do leilão'},
+      {key:'dealer',label:'3) Painel do lojista'},
+      {key:'checkout',label:'4) Checkout / Escrow'},
+      {key:'logistics',label:'5) Coleta & Título'},
+      {key:'arbitration',label:'6) Arbitragem'},
+      {key:'onboarding',label:'7) Onboarding do lojista'}
+    ];
+    let active='seller';
+    const nav=document.getElementById('nav');
+    function renderNav(){
+      nav.innerHTML='';
+      tabs.forEach(t=>{
+        const b=document.createElement('button');
+        b.className='tabbtn'+(t.key===active?' active':'');
+        b.innerHTML='<div>'+t.label+'</div>';
+        b.onclick=()=>{active=t.key;update();};
+        nav.appendChild(b);
+      });
+    }
+    function update(){
+      renderNav();
+      tabs.forEach(t=>{
+        const el=document.getElementById(t.key);
+        if(el) el.classList.toggle('hidden',t.key!==active);
+      });
+    }
+    update();
+  </script>
+</body>
+</html>
