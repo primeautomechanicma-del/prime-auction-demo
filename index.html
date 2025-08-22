@@ -454,5 +454,69 @@
     // document.querySelector('.logo').style.background = center/cover url('https://SUA-LOGO-AQUI.png');
     // document.querySelector('.logo').textContent = '';
   </script>
+  <!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // Conexão com seu Supabase
+  const SUPABASE_URL = 'https://jzijuaaqwtmmpuiljhuy.supabase.co';
+  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6aWp1YWFxd3RtbXB1aWxqaHV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4ODc2MDQsImV4cCI6MjA3MTQ2MzYwNH0.5vCINb3Ikmm80WbfoC0yO7e1nHxRiKtZU_Wxf6OdTkI';
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+  // Dar IDs aos inputs da tela de cadastro
+  (function ensureIds(){
+    const seller = document.querySelector('#seller');
+    if(!seller) return;
+    const inputs = seller.querySelectorAll('input');
+    if(inputs.length >= 4){
+      inputs[0].id = 'vin';
+      inputs[1].id = 'km';
+      inputs[2].id = 'titulo';
+      inputs[3].id = 'reserva';
+    }
+  })();
+
+  // Função: salvar veículo e criar leilão de 24h
+  async function salvarVeiculo(){
+    const vin = document.querySelector('#vin')?.value || '';
+    const mileage = parseInt((document.querySelector('#km')?.value || '').replace(/\D/g,'')) || 0;
+    const title_brand = document.querySelector('#titulo')?.value || '';
+    const reserve = Number((document.querySelector('#reserva')?.value || '').replace(/[^\d.]/g,'')) || 0;
+
+    const { data, error } = await supabase
+      .from('vehicles')
+      .insert([{ vin, mileage, title_brand, reserve, status:'listed' }])
+      .select();
+
+    if(error){ alert('Erro ao salvar: ' + error.message); return; }
+
+    const v = data[0];
+    const endsAt = new Date(Date.now() + 24*60*60*1000).toISOString();
+    await supabase.from('auctions').insert([{ vehicle_id: v.id, reserve: reserve, ends_at: endsAt }]);
+    alert('✅ Veículo salvo e leilão criado! ID: ' + v.id);
+  }
+
+  // Função: dar lance simples (+100)
+  async function darLanceSimples(){
+    const { data: aucts, error } = await supabase
+      .from('auctions').select('*').order('created_at', { ascending:false }).limit(1);
+    if(error || !aucts?.length){ alert('Crie um veículo/leilão primeiro.'); return; }
+    const auction = aucts[0];
+    const novo = Number(auction.current_bid || 0) + 100;
+
+    await supabase.from('bids').insert([{ auction_id: auction.id, dealer_id: null, amount: novo }]);
+    await supabase.from('auctions').update({ current_bid: novo }).eq('id', auction.id);
+    alert('💸 Lance enviado: $' + novo.toLocaleString());
+  }
+
+  // Tempo real: atualiza o #lance-atual automaticamente
+  supabase
+    .channel('bids-live')
+    .on('postgres_changes', { event:'INSERT', schema:'public', table:'bids' }, payload => {
+      const amt = Number(payload.new.amount || 0);
+      const span = document.querySelector('#lance-atual');
+      if(span) span.textContent = '$' + amt.toLocaleString();
+    })
+    .subscribe();
+</script>
 </body>
 </html>
