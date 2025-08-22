@@ -405,121 +405,125 @@
     update();
   </script>
 
-  <!-- Supabase SDK + funções -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    // Conexão com seu Supabase
-    const SUPABASE_URL = 'https://jzijuaaqwtmmpuiljhuy.supabase.co';
-    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6aWp1YWFxd3RtbXB1aWxqaHV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4ODc2MDQsImV4cCI6MjA3MTQ2MzYwNH0.5vCINb3Ikmm80WbfoC0yO7e1nHxRiKtZU_Wxf6OdTkI';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
-// ===== Timer =====
-function formatMoney(n){ return '$' + Number(n||0).toLocaleString(); }
+  <!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-let timerId = null;
-async function carregarLeilaoEIniciarTimer(){
-  const { data } = await supabase.from('auctions').select('*').order('created_at',{ascending:false}).limit(1);
-  if(!data || !data.length) return;
-  const auction = data[0];
+<!-- Bloco único de JS (funções globais) -->
+<script>
+  // ===== CONFIG SUPABASE =====
+  const SUPABASE_URL  = 'https://jzijuaaqwtmmpuiljhuy.supabase.co';
+  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6aWp1YWFxd3RtbXB1aWxqaHV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4ODc2MDQsImV4cCI6MjA3MTQ2MzYwNH0.5vCINb3Ikmm80WbfoC0yO7e1nHxRiKtZU_Wxf6OdTkI';
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-  // atualiza lance atual na UI, se existir
-  const spanLance = document.querySelector('#lance-atual');
-  if(spanLance) spanLance.textContent = formatMoney(auction.current_bid||0);
+  // ===== HELPERS =====
+  function money(n){ return '$' + Number(n||0).toLocaleString(); }
 
-  // inicia contador
-  if(timerId) clearInterval(timerId);
-  const el = document.getElementById('tempo-restante');
-  timerId = setInterval(()=>{
-    if(!el) return;
-    const end = new Date(auction.ends_at).getTime();
-    const now = Date.now();
-    let secs = Math.max(0, Math.floor((end - now)/1000));
-    const h = String(Math.floor(secs/3600)).padStart(2,'0');
-    const m = String(Math.floor((secs%3600)/60)).padStart(2,'0');
-    const s = String(secs%60).padStart(2,'0');
-    el.textContent = ${h}:${m}:${s};
-    if(secs===0){ clearInterval(timerId); }
-  },1000);
-}
+  // ===== TIMER =====
+  let timerId = null;
+  async function carregarLeilaoEIniciarTimer(){
+    const { data, error } = await supabase
+      .from('auctions').select('*').order('created_at',{ascending:false}).limit(1);
+    if(error || !data?.length) return;
+    const auction = data[0];
 
-// chama o timer ao abrir a aba do leilão (ou na carga da página)
-carregarLeilaoEIniciarTimer();
-    // Salvar veículo e criar leilão de 24h
-    async function salvarVeiculo(){
-      const vin = document.querySelector('#vin')?.value || '';
-      const mileage = parseInt((document.querySelector('#km')?.value || '').replace(/\D/g,'')) || 0;
-      const title_brand = document.querySelector('#titulo')?.value || '';
-      const reserve = Number((document.querySelector('#reserva')?.value || '').replace(/[^\d.]/g,'')) || 0;
+    // atualiza lance atual na UI
+    const spanL = document.querySelector('#lance-atual');
+    if(spanL) spanL.textContent = money(auction.current_bid||0);
 
-      const { data, error } = await supabase
-        .from('vehicles')
-        .insert([{ vin, mileage, title_brand, reserve, status:'listed' }])
-        .select();
-
-      if(error){ alert('Erro ao salvar: ' + error.message); return; }
-
-      const v = data[0];
-      const endsAt = new Date(Date.now() + 24*60*60*1000).toISOString();
-      const { error: errA } = await supabase
-        .from('auctions')
-        .insert([{ vehicle_id: v.id, reserve: reserve, ends_at: endsAt }]);
-      if(errA){ alert('Veículo salvo, mas falhou criar leilão: '+errA.message); return; }
-
-      alert('✅ Veículo salvo e leilão criado! ID: ' + v.id);
-    }
-
-    // Lance simples: pega o leilão mais recente e soma +$100
-    async function darLanceSimples(){
-  // garante que temos o leilão mais recente
-  const { data: aucts, error } = await supabase
-    .from('auctions').select('*').order('created_at', { ascending:false }).limit(1);
-  if(error || !aucts?.length){ alert('Crie um veículo/leilão primeiro.'); return; }
-
-  const auction = aucts[0];
-  const atual = Number(auction.current_bid || 0);
-
-  // pega o que o usuário digitou (campo #lance-input). Se estiver vazio, usa +100
-  const input = document.getElementById('lance-input')?.value || '';
-  let valorDigitado = Number(String(input).replace(/[^\d.]/g,'')) || 0;
-
-  // mínimo de +$100 sobre o atual
-  let novo = valorDigitado>0 ? Math.max(valorDigitado, atual+100) : (atual+100);
-
-  // grava o lance
-  const { error: e1 } = await supabase.from('bids').insert([
-    { auction_id: auction.id, dealer_id: null, amount: novo }
-  ]);
-  if(e1){ alert('Erro ao registrar lance: '+e1.message); return; }
-
-  // atualiza o lance atual no leilão
-  const { error: e2 } = await supabase.from('auctions')
-    .update({ current_bid: novo }).eq('id', auction.id);
-  if(e2){ alert('Erro ao atualizar leilão: '+e2.message); return; }
-
-  // Anti-sniping: se restarem < 120s, estende +120s
-  const rest = (new Date(auction.ends_at).getTime() - Date.now())/1000;
-  if(rest < 120){
-    const novoFim = new Date(Date.now() + (rest>0?rest:0)*1000 + 120*1000).toISOString();
-    await supabase.from('auctions').update({ ends_at: novoFim }).eq('id', auction.id);
+    // inicia/atualiza o contador
+    if(timerId) clearInterval(timerId);
+    const el = document.getElementById('tempo-restante');
+    timerId = setInterval(()=>{
+      if(!el) return;
+      const end = new Date(auction.ends_at).getTime();
+      const now = Date.now();
+      let s = Math.max(0, Math.floor((end - now)/1000));
+      const h = String(Math.floor(s/3600)).padStart(2,'0');
+      const m = String(Math.floor((s%3600)/60)).padStart(2,'0');
+      const ss= String(s%60).padStart(2,'0');
+      el.textContent = ${h}:${m}:${ss};
+      if(s===0) clearInterval(timerId);
+    },1000);
   }
 
-  alert('💸 Lance enviado: $' + Number(novo).toLocaleString());
-}
-    // Tempo real: quando entrar um lance, atualiza o valor na tela
-  supabase
-  .channel('bids-live')
-  .on('postgres_changes', { event:'INSERT', schema:'public', table:'bids' }, payload => {
-    const amt = Number(payload.new.amount || 0);
-    const span = document.querySelector('#lance-atual');
-    if(span) span.textContent = '$' + amt.toLocaleString();
-    const log = document.querySelector('#log-lances');
-    if(log) log.innerHTML = 'Dealer — $'+amt.toLocaleString()+' • agora<br>' + log.innerHTML;
-  })
-  .on('postgres_changes', { event:'UPDATE', schema:'public', table:'auctions' }, payload => {
-    // quando o Supabase avisar que o leilão mudou (ex.: ends_at estendido), reinicia o timer
+  // ===== AÇÕES (expostas no escopo global) =====
+  // Salvar veículo + criar leilão (24h)
+  window.salvarVeiculo = async function (){
+    const vin   = document.querySelector('#vin')?.value || '';
+    const kmStr = document.querySelector('#km')?.value || '';
+    const mileage = parseInt(String(kmStr).replace(/\D/g,'')) || 0;
+    const title_brand = document.querySelector('#titulo')?.value || '';
+    const resStr = document.querySelector('#reserva')?.value || '';
+    const reserve = Number(String(resStr).replace(/[^\d.]/g,'')) || 0;
+
+    const { data, error } = await supabase
+      .from('vehicles')
+      .insert([{ vin, mileage, title_brand, reserve, status:'listed' }])
+      .select();
+
+    if(error){ alert('Erro ao salvar: '+error.message); return; }
+
+    const v = data[0];
+    const endsAt = new Date(Date.now() + 24*60*60*1000).toISOString();
+    const { error: eA } = await supabase
+      .from('auctions')
+      .insert([{ vehicle_id: v.id, reserve, ends_at: endsAt }]);
+    if(eA){ alert('Veículo salvo, mas falhou criar leilão: '+eA.message); return; }
+
+    alert('✅ Veículo salvo e leilão criado! ID: '+v.id);
     carregarLeilaoEIniciarTimer();
-  })
-  .subscribe();
-  </script>
+  };
+
+  // Dar lance com valor digitado (mínimo +$100) + anti-sniping (+2min)
+  window.darLanceSimples = async function (){
+    const { data, error } = await supabase
+      .from('auctions').select('*').order('created_at',{ascending:false}).limit(1);
+    if(error || !data?.length){ alert('Crie um veículo/leilão primeiro.'); return; }
+
+    const auction = data[0];
+    const atual   = Number(auction.current_bid || 0);
+
+    const input = document.getElementById('lance-input')?.value || '';
+    const digitado = Number(String(input).replace(/[^\d.]/g,'')) || 0;
+
+    const novo = digitado>0 ? Math.max(digitado, atual+100) : (atual+100);
+
+    const { error: e1 } = await supabase
+      .from('bids').insert([{ auction_id: auction.id, dealer_id: null, amount: novo }]);
+    if(e1){ alert('Erro ao registrar lance: '+e1.message); return; }
+
+    const { error: e2 } = await supabase
+      .from('auctions').update({ current_bid: novo }).eq('id', auction.id);
+    if(e2){ alert('Erro ao atualizar leilão: '+e2.message); return; }
+
+    // Anti-sniping: se restarem < 120s, estende +120s
+    const rest = (new Date(auction.ends_at).getTime() - Date.now())/1000;
+    if(rest < 120){
+      const novoFim = new Date(Date.now() + (rest>0?rest:0)*1000 + 120*1000).toISOString();
+      await supabase.from('auctions').update({ ends_at: novoFim }).eq('id', auction.id);
+    }
+
+    alert('💸 Lance enviado: ' + money(novo));
+  };
+
+  // ===== Realtime (atualiza UI quando houver lance ou mudança no leilão) =====
+  supabase
+    .channel('bids-live')
+    .on('postgres_changes', { event:'INSERT', schema:'public', table:'bids' }, payload => {
+      const amt = Number(payload.new.amount || 0);
+      const span = document.querySelector('#lance-atual');
+      if(span) span.textContent = money(amt);
+      const log = document.querySelector('#log-lances');
+      if(log) log.innerHTML = 'Dealer — '+money(amt)+' • agora<br>' + log.innerHTML;
+    })
+    .on('postgres_changes', { event:'UPDATE', schema:'public', table:'auctions' }, payload => {
+      carregarLeilaoEIniciarTimer(); // reinicia contador quando ends_at muda
+    })
+    .subscribe();
+
+  // inicia contador ao carregar a página
+  carregarLeilaoEIniciarTimer();
+</script>
 
 </body>
 </html>
