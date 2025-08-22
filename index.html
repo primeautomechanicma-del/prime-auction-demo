@@ -412,6 +412,44 @@
     const SUPABASE_URL = 'https://jzijuaaqwtmmpuiljhuy.supabase.co';
     const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6aWp1YWFxd3RtbXB1aWxqaHV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4ODc2MDQsImV4cCI6MjA3MTQ2MzYwNH0.5vCINb3Ikmm80WbfoC0yO7e1nHxRiKtZU_Wxf6OdTkI';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+    <script>
+// ===== Timer e estado do leilão =====
+let currentAuction = null;
+let timerId = null;
+
+function formatMoney(n){ return '$' + Number(n||0).toLocaleString(); }
+
+function atualizarLanceAtualUI(val){
+  document.querySelector('#lance-atual')?.replaceChildren(document.createTextNode(formatMoney(val)));
+  document.querySelector('#resumo-lance')?.replaceChildren(document.createTextNode(formatMoney(val)));
+}
+
+function iniciarTimer(){
+  if(!currentAuction) return;
+  if(timerId) clearInterval(timerId);
+  const el = document.getElementById('tempo-restante');
+  timerId = setInterval(()=>{
+    if(!el) return;
+    const end = new Date(currentAuction.ends_at).getTime();
+    const now = Date.now();
+    let secs = Math.max(0, Math.floor((end - now)/1000));
+    const h = String(Math.floor(secs/3600)).padStart(2,'0');
+    const m = String(Math.floor((secs%3600)/60)).padStart(2,'0');
+    const s = String(secs%60).padStart(2,'0');
+    el.textContent = ${h}:${m}:${s};
+    if(secs===0){ clearInterval(timerId); }
+  },1000);
+}
+
+async function carregarLeilao(){
+  const { data } = await supabase.from('auctions').select('*').order('created_at',{ascending:false}).limit(1);
+  if(data && data.length){
+    currentAuction = data[0];
+    atualizarLanceAtualUI(currentAuction.current_bid||0);
+    iniciarTimer();
+  }
+}
+</script>
 
     // Salvar veículo e criar leilão de 24h
     async function salvarVeiculo(){
