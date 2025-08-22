@@ -5,83 +5,49 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Prime Motors Auction — Protótipo</title>
 <style>
-  /* ======= PALHETA PRIME MOTORS ======= */
   :root{
-    --pm-bg:#0a0a0a;          /* fundo geral escuro */
-    --pm-card:#111317;        /* cartões */
-    --pm-border:#1f232b;      /* bordas */
-    --pm-text:#f7f7f8;        /* texto principal */
-    --pm-muted:#a1a1aa;       /* texto suave */
-    --pm-gold:#d4af37;        /* dourado */
-    --pm-gold-2:#c49a2c;      /* dourado mais escuro */
+    --pm-bg:#0a0a0a; --pm-card:#111317; --pm-border:#1f232b;
+    --pm-text:#f7f7f8; --pm-muted:#a1a1aa; --pm-gold:#d4af37; --pm-gold-2:#c49a2c;
     --pm-shadow:0 10px 24px rgba(0,0,0,.35);
   }
-
   *{box-sizing:border-box}
   body{
-    margin:0; color:var(--pm-text); background:
+    margin:0; color:var(--pm-text);
+    background:
       radial-gradient(1200px 600px at 0% -10%, rgba(212,175,55,.12), transparent 60%),
       radial-gradient(900px 500px at 100% 110%, rgba(196,154,44,.10), transparent 60%),
       linear-gradient(#0b0b0c,#0a0a0a);
     font:16px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;
   }
-
-  /* Topo */
   .topbar{position:sticky;top:0;z-index:10;border-bottom:1px solid var(--pm-border);
           background:rgba(10,10,10,.7);backdrop-filter:saturate(160%) blur(8px)}
   .wrap{max-width:1120px;margin:0 auto;padding:16px 20px}
   .brand{display:flex;align-items:center;gap:12px}
-  .logo{
-    width:44px;height:44px;border-radius:12px;
-    background:linear-gradient(145deg,#000,#161616);
-    display:grid;place-items:center;box-shadow:var(--pm-shadow); position:relative;
-  }
-  .logo::after{
-    content:"PM"; font-weight:800; letter-spacing:.5px;
-    color:var(--pm-gold); text-shadow:0 0 14px rgba(212,175,55,.45);
-  }
+  .logo{width:44px;height:44px;border-radius:12px;background:linear-gradient(145deg,#000,#161616);
+        display:grid;place-items:center;box-shadow:var(--pm-shadow);position:relative}
+  .logo::after{content:"PM";font-weight:800;letter-spacing:.5px;color:var(--pm-gold);
+               text-shadow:0 0 14px rgba(212,175,55,.45)}
   .brand-title{font-weight:700;letter-spacing:.3px}
   .brand-sub{font-size:12px;color:var(--pm-muted);margin-top:-2px}
-
-  /* Navegação */
   .nav{display:grid;gap:12px;margin:18px 0}
   @media(min-width:720px){.nav{grid-template-columns:repeat(3,1fr)}}
   @media(min-width:1024px){.nav{grid-template-columns:repeat(7,1fr)}}
-  .tabbtn{
-    padding:12px;border:1px solid var(--pm-border);border-radius:14px;
-    background:linear-gradient(180deg,#121417,#0e1013); color:var(--pm-text);
-    text-align:left;cursor:pointer;box-shadow:var(--pm-shadow); transition:.15s;
-  }
+  .tabbtn{padding:12px;border:1px solid var(--pm-border);border-radius:14px;
+          background:linear-gradient(180deg,#121417,#0e1013);color:var(--pm-text);
+          text-align:left;cursor:pointer;box-shadow:var(--pm-shadow);transition:.15s}
   .tabbtn:hover{transform:translateY(-1px)}
-  .tabbtn.active{outline:2px solid var(--pm-gold); box-shadow:0 0 0 3px rgba(212,175,55,.15), var(--pm-shadow)}
+  .tabbtn.active{outline:2px solid var(--pm-gold);box-shadow:0 0 0 3px rgba(212,175,55,.15),var(--pm-shadow)}
   .muted{color:var(--pm-muted)}
   .hidden{display:none}
-
-  /* Cards */
-  .card{background:linear-gradient(180deg,#121417,#0c0e11);
-        border:1px solid var(--pm-border); border-radius:16px; box-shadow:var(--pm-shadow)}
+  .card{background:linear-gradient(180deg,#121417,#0c0e11);border:1px solid var(--pm-border);
+        border-radius:16px;box-shadow:var(--pm-shadow)}
   .card .hd{padding:16px;border-bottom:1px solid var(--pm-border)}
   .card .bd{padding:16px}
   .title{font-size:20px;font-weight:800;letter-spacing:.2px}
-
-  /* Inputs / botões */
-  .input,.select,.textarea{
-    width:100%;padding:12px;border-radius:12px; background:#0b0d10;
-    border:1px solid var(--pm-border); color:var(--pm-text)
-  }
+  .input,.select,.textarea{width:100%;padding:12px;border-radius:12px;background:#0b0d10;border:1px solid var(--pm-border);color:var(--pm-text)}
   .textarea{min-height:96px;resize:vertical}
-  .btn{
-    padding:10px 14px;border-radius:12px;border:1px solid #000;
-    background:linear-gradient(180deg,#1b1b1c,#0f0f10); color:#fff; cursor:pointer;
-    box-shadow:var(--pm-shadow)
-  }
-  .btn.gold{
-    border-color:#a07f1a;
-    background:linear-gradient(180deg,var(--pm-gold),var(--pm-gold-2));
-    color:#111; font-weight:700; text-shadow:0 1px 0 rgba(255,255,255,.25)
-  }
-
-  /* Grids utilitárias */
+  .btn{padding:10px 14px;border-radius:12px;border:1px solid #000;background:linear-gradient(180deg,#1b1b1c,#0f0f10);color:#fff;cursor:pointer;box-shadow:var(--pm-shadow)}
+  .btn.gold{border-color:#a07f1a;background:linear-gradient(180deg,var(--pm-gold),var(--pm-gold-2));color:#111;font-weight:700;text-shadow:0 1px 0 rgba(255,255,255,.25)}
   .grid{display:grid;gap:16px}
   .two{grid-template-columns:1fr 1fr}
   .three{grid-template-columns:repeat(3,1fr)}
@@ -89,16 +55,13 @@
   .two-2{grid-template-columns:2fr 2fr}
   .two-1-1{grid-template-columns:2fr 1fr 1fr}
   @media(max-width:960px){.two,.two-1,.two-2,.two-1-1,.three{grid-template-columns:1fr}}
-
-  .badge{display:inline-flex;align-items:center;font-size:12px;color:#cbd5e1;
-         background:#0b0d10;border:1px solid var(--pm-border);border-radius:999px;padding:2px 8px}
-  .thumb{aspect-ratio:1/1;border-radius:10px;background:#0b0d10;border:1px dashed #2a2f37;
-         display:grid;place-items:center;color:#475569;font-size:12px}
+  .badge{display:inline-flex;align-items:center;font-size:12px;color:#cbd5e1;background:#0b0d10;border:1px solid var(--pm-border);border-radius:999px;padding:2px 8px}
+  .thumb{aspect-ratio:1/1;border-radius:10px;background:#0b0d10;border:1px dashed #2a2f37;display:grid;place-items:center;color:#475569;font-size:12px}
   .list{padding-left:18px}
 </style>
 </head>
 <body>
-  <!-- Topo -->
+  <!-- TOPO -->
   <div class="topbar">
     <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;height:72px">
       <div class="brand">
@@ -108,7 +71,6 @@
           <div class="brand-sub">Consumer → Dealer • confiança e transparência</div>
         </div>
       </div>
-      <!-- Botões de ação (exibição) -->
       <div style="display:flex;gap:8px">
         <button class="btn">Entrar</button>
         <button class="btn gold">Criar conta</button>
@@ -117,22 +79,22 @@
   </div>
 
   <div class="wrap">
-    <!-- Navegação -->
+    <!-- NAVEGAÇÃO -->
     <div class="nav" id="nav"></div>
 
-    <!-- 1) Vendedor – Cadastro -->
+    <!-- 1) VENDEDOR -->
     <section id="seller">
       <div class="grid two-1">
         <div class="card">
           <div class="hd"><div class="title">Cadastro do carro</div><div class="muted">VIN, fotos guiadas, reserva.</div></div>
           <div class="bd">
             <div class="grid">
-              <label>VIN <input class="input" value="1HGCV1F30JA123456"></label>
+              <label>VIN <input class="input" id="vin" value="1HGCV1F30JA123456"></label>
               <div class="grid two">
-                <label>Quilometragem <input class="input" value="58,500"></label>
-                <label>Título <input class="input" value="Clean"></label>
+                <label>Quilometragem <input class="input" id="km" value="58,500"></label>
+                <label>Título <input class="input" id="titulo" value="Clean"></label>
               </div>
-              <label>Reserva (mínimo) <input class="input" value="$17,500"></label>
+              <label>Reserva (mínimo) <input class="input" id="reserva" value="$17,500"></label>
 
               <div>
                 <div class="muted" style="font-weight:700">Fotos (guiado)</div>
@@ -140,12 +102,11 @@
                   <div class="thumb">+ Frente</div><div class="thumb">+ Traseira</div><div class="thumb">+ Painel</div>
                   <div class="thumb">+ Interior</div><div class="thumb">+ Odom.</div><div class="thumb">+ Motor</div>
                 </div>
-                <div class="muted" style="font-size:12px;margin-top:6px">Dica: vídeo curto do motor e snapshot OBD.</div>
               </div>
 
-              <div style="display:flex;gap:10px">
-                <button class="btn gold">Pré-visualizar leilão</button>
+              <div style="display:flex;gap:10px;flex-wrap:wrap">
                 <button class="btn">Salvar rascunho</button>
+                <button class="btn gold" onclick="salvarVeiculo()">Salvar no Supabase</button>
               </div>
             </div>
           </div>
@@ -170,7 +131,7 @@
       </div>
     </section>
 
-    <!-- 2) Página do leilão -->
+    <!-- 2) PÁGINA DO LEILÃO -->
     <section id="auction" class="hidden">
       <div class="grid two-1-1">
         <div class="card" style="grid-column:1 / span 2">
@@ -191,21 +152,21 @@
                   <div><div class="muted">Tempo restante</div><div class="title">00:01:37</div></div>
                   <div style="text-align:right">
                     <div class="muted">Lance atual</div>
-                    <div class="title">$17,650</div>
+                    <div class="title"><span id="lance-atual">$17,650</span></div>
                     <div style="color:var(--pm-gold);font-size:12px">Acima da reserva</div>
                   </div>
                 </div>
                 <div style="margin-top:10px">
                   <div class="muted" style="font-weight:700">Seu lance</div>
-                  <div style="display:flex;gap:8px;margin-top:6px">
-                    <input class="input" placeholder="$17,700">
-                    <button class="btn gold">Dar lance</button>
+                  <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
+                    <input class="input" id="lance-input" placeholder="$17,700" style="max-width:180px">
+                    <button class="btn gold" onclick="darLanceSimples()">Dar lance (+$100)</button>
                   </div>
                   <div class="muted" style="font-size:12px;margin-top:4px">Incremento mínimo $100 • Anti-sniping +2min</div>
                 </div>
                 <div style="margin-top:12px">
                   <div style="font-weight:700;margin-bottom:6px">Histórico de lances</div>
-                  <div class="muted" style="max-height:140px;overflow:auto">
+                  <div class="muted" id="log-lances" style="max-height:140px;overflow:auto">
                     Prime Motors — $16,800 • 12:02<br>
                     Westline Auto — $17,100 • 12:10<br>
                     Superior Cars — $17,650 • 12:13
@@ -252,7 +213,7 @@
       </div>
     </section>
 
-    <!-- 3) Painel do lojista -->
+    <!-- 3) PAINEL DO LOJISTA (resumido para demo) -->
     <section id="dealer" class="hidden">
       <div class="grid two-2">
         <div class="card">
@@ -269,7 +230,6 @@
         </div>
 
         <div class="grid two" style="gap:16px">
-          <!-- Card veículo 1 -->
           <div class="card">
             <div style="aspect-ratio:16/9;background:#0b0d10;border-bottom:1px solid var(--pm-border);border-radius:16px 16px 0 0"></div>
             <div class="bd">
@@ -280,7 +240,6 @@
               <div style="display:flex;gap:8px;margin-top:8px"><button class="btn gold">Dar lance</button><button class="btn">Watchlist</button></div>
             </div>
           </div>
-          <!-- Card veículo 2 -->
           <div class="card">
             <div style="aspect-ratio:16/9;background:#0b0d10;border-bottom:1px solid var(--pm-border);border-radius:16px 16px 0 0"></div>
             <div class="bd">
@@ -295,18 +254,17 @@
       </div>
     </section>
 
-    <!-- 4) Checkout / Escrow -->
+    <!-- 4) CHECKOUT -->
     <section id="checkout" class="hidden">
       <div class="grid two">
         <div class="card">
           <div class="hd"><b>Resumo da transação</b></div>
           <div class="bd">
             <div style="display:flex;justify-content:space-between"><span class="muted">Veículo</span><span>2019 Honda Accord</span></div>
-            <div style="display:flex;justify-content:space-between"><span class="muted">Lance vencedor</span><span>$17,650</span></div>
+            <div style="display:flex;justify-content:space-between"><span class="muted">Lance vencedor</span><span id="resumo-lance">$17,650</span></div>
             <div style="display:flex;justify-content:space-between"><span class="muted">Buyer fee (2%)</span><span>$353</span></div>
             <div style="display:flex;justify-content:space-between"><span class="muted">Depósito (10%)</span><span>$1,765</span></div>
             <button class="btn gold" style="width:100%;margin-top:10px">Pagar depósito via Stripe</button>
-            <div class="muted" style="font-size:12px;margin-top:6px">Escrow mantém o valor até a entrega do título.</div>
           </div>
         </div>
         <div class="card">
@@ -323,20 +281,17 @@
       </div>
     </section>
 
-    <!-- 5) Coleta & Título -->
+    <!-- 5) LOGÍSTICA -->
     <section id="logistics" class="hidden">
       <div class="grid two">
         <div class="card">
           <div class="hd"><b>Coleta do veículo</b></div>
           <div class="bd">
             <div class="grid two">
-              <div><div class="muted">Endereço de retirada</div><div class="input" style="padding:12px">886 Middlesex St, Lowell, MA</div></div>
-              <div><div class="muted">Janela de coleta</div><div class="input" style="padding:12px">Qui, 14:00–18:00</div></div>
+              <div><div class="muted">Endereço</div><div class="input" style="padding:12px">886 Middlesex St, Lowell, MA</div></div>
+              <div><div class="muted">Janela</div><div class="input" style="padding:12px">Qui, 14:00–18:00</div></div>
             </div>
-            <div style="margin-top:8px">
-              <div class="muted">Transportadora</div>
-              <div class="input" style="padding:12px">AutoHaul Express • ETA 08/24</div>
-            </div>
+            <div style="margin-top:8px"><div class="muted">Transportadora</div><div class="input" style="padding:12px">AutoHaul Express • ETA 08/24</div></div>
           </div>
         </div>
         <div class="card">
@@ -351,7 +306,7 @@
       </div>
     </section>
 
-    <!-- 6) Arbitragem -->
+    <!-- 6) ARBITRAGEM -->
     <section id="arbitration" class="hidden">
       <div class="grid two">
         <div class="card">
@@ -391,7 +346,7 @@
       </div>
     </section>
 
-    <!-- 7) Onboarding do lojista -->
+    <!-- 7) ONBOARDING DO LOJISTA -->
     <section id="onboarding" class="hidden">
       <div class="card">
         <div class="hd"><div class="title">Onboarding do lojista</div><div class="muted">Validação de licença e documentos.</div></div>
@@ -417,8 +372,8 @@
     </section>
   </div>
 
+  <!-- Navegação entre telas -->
   <script>
-    // Navegação entre telas
     const tabs=[
       {key:'seller',label:'1) Cadastro do carro'},
       {key:'auction',label:'2) Página do leilão'},
@@ -448,75 +403,72 @@
       });
     }
     update();
-
-    // (Opcional) Trocar logo por imagem
-    // Coloque o URL da sua logo abaixo, descomente e pronto:
-    // document.querySelector('.logo').style.background = center/cover url('https://SUA-LOGO-AQUI.png');
-    // document.querySelector('.logo').textContent = '';
   </script>
-  <!-- Supabase SDK -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  // Conexão com seu Supabase
-  const SUPABASE_URL = 'https://jzijuaaqwtmmpuiljhuy.supabase.co';
-  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6aWp1YWFxd3RtbXB1aWxqaHV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4ODc2MDQsImV4cCI6MjA3MTQ2MzYwNH0.5vCINb3Ikmm80WbfoC0yO7e1nHxRiKtZU_Wxf6OdTkI';
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-  // Dar IDs aos inputs da tela de cadastro
-  (function ensureIds(){
-    const seller = document.querySelector('#seller');
-    if(!seller) return;
-    const inputs = seller.querySelectorAll('input');
-    if(inputs.length >= 4){
-      inputs[0].id = 'vin';
-      inputs[1].id = 'km';
-      inputs[2].id = 'titulo';
-      inputs[3].id = 'reserva';
+  <!-- Supabase SDK + funções -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // Conexão com seu Supabase
+    const SUPABASE_URL = 'https://jzijuaaqwtmmpuiljhuy.supabase.co';
+    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6aWp1YWFxd3RtbXB1aWxqaHV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4ODc2MDQsImV4cCI6MjA3MTQ2MzYwNH0.5vCINb3Ikmm80WbfoC0yO7e1nHxRiKtZU_Wxf6OdTkI';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+    // Salvar veículo e criar leilão de 24h
+    async function salvarVeiculo(){
+      const vin = document.querySelector('#vin')?.value || '';
+      const mileage = parseInt((document.querySelector('#km')?.value || '').replace(/\D/g,'')) || 0;
+      const title_brand = document.querySelector('#titulo')?.value || '';
+      const reserve = Number((document.querySelector('#reserva')?.value || '').replace(/[^\d.]/g,'')) || 0;
+
+      const { data, error } = await supabase
+        .from('vehicles')
+        .insert([{ vin, mileage, title_brand, reserve, status:'listed' }])
+        .select();
+
+      if(error){ alert('Erro ao salvar: ' + error.message); return; }
+
+      const v = data[0];
+      const endsAt = new Date(Date.now() + 24*60*60*1000).toISOString();
+      const { error: errA } = await supabase
+        .from('auctions')
+        .insert([{ vehicle_id: v.id, reserve: reserve, ends_at: endsAt }]);
+      if(errA){ alert('Veículo salvo, mas falhou criar leilão: '+errA.message); return; }
+
+      alert('✅ Veículo salvo e leilão criado! ID: ' + v.id);
     }
-  })();
 
-  // Função: salvar veículo e criar leilão de 24h
-  async function salvarVeiculo(){
-    const vin = document.querySelector('#vin')?.value || '';
-    const mileage = parseInt((document.querySelector('#km')?.value || '').replace(/\D/g,'')) || 0;
-    const title_brand = document.querySelector('#titulo')?.value || '';
-    const reserve = Number((document.querySelector('#reserva')?.value || '').replace(/[^\d.]/g,'')) || 0;
+    // Lance simples: pega o leilão mais recente e soma +$100
+    async function darLanceSimples(){
+      const { data: aucts, error } = await supabase
+        .from('auctions').select('*').order('created_at', { ascending:false }).limit(1);
+      if(error || !aucts?.length){ alert('Crie um veículo/leilão primeiro.'); return; }
 
-    const { data, error } = await supabase
-      .from('vehicles')
-      .insert([{ vin, mileage, title_brand, reserve, status:'listed' }])
-      .select();
+      const auction = aucts[0];
+      const atual = Number(auction.current_bid || 0);
+      const novo = atual + 100;
 
-    if(error){ alert('Erro ao salvar: ' + error.message); return; }
+      const { error: e1 } = await supabase.from('bids').insert([{ auction_id: auction.id, dealer_id: null, amount: novo }]);
+      const { error: e2 } = await supabase.from('auctions').update({ current_bid: novo }).eq('id', auction.id);
+      if(e1||e2){ alert('Erro ao dar lance.'); return; }
 
-    const v = data[0];
-    const endsAt = new Date(Date.now() + 24*60*60*1000).toISOString();
-    await supabase.from('auctions').insert([{ vehicle_id: v.id, reserve: reserve, ends_at: endsAt }]);
-    alert('✅ Veículo salvo e leilão criado! ID: ' + v.id);
-  }
+      // Atualiza resumo
+      const spanResumo = document.querySelector('#resumo-lance');
+      if(spanResumo) spanResumo.textContent = '$' + novo.toLocaleString();
+      alert('💸 Lance enviado: $' + novo.toLocaleString());
+    }
 
-  // Função: dar lance simples (+100)
-  async function darLanceSimples(){
-    const { data: aucts, error } = await supabase
-      .from('auctions').select('*').order('created_at', { ascending:false }).limit(1);
-    if(error || !aucts?.length){ alert('Crie um veículo/leilão primeiro.'); return; }
-    const auction = aucts[0];
-    const novo = Number(auction.current_bid || 0) + 100;
+    // Tempo real: quando entrar um lance, atualiza o valor na tela
+    supabase
+      .channel('bids-live')
+      .on('postgres_changes', { event:'INSERT', schema:'public', table:'bids' }, payload => {
+        const amt = Number(payload.new.amount || 0);
+        const span = document.querySelector('#lance-atual');
+        if(span) span.textContent = '$' + amt.toLocaleString();
+        const log = document.querySelector('#log-lances');
+        if(log) log.innerHTML = 'Dealer — $'+amt.toLocaleString()+' • agora<br>' + log.innerHTML;
+      })
+      .subscribe();
+  </script>
 
-    await supabase.from('bids').insert([{ auction_id: auction.id, dealer_id: null, amount: novo }]);
-    await supabase.from('auctions').update({ current_bid: novo }).eq('id', auction.id);
-    alert('💸 Lance enviado: $' + novo.toLocaleString());
-  }
-
-  // Tempo real: atualiza o #lance-atual automaticamente
-  supabase
-    .channel('bids-live')
-    .on('postgres_changes', { event:'INSERT', schema:'public', table:'bids' }, payload => {
-      const amt = Number(payload.new.amount || 0);
-      const span = document.querySelector('#lance-atual');
-      if(span) span.textContent = '$' + amt.toLocaleString();
-    })
-    .subscribe();
-</script>
 </body>
 </html>
