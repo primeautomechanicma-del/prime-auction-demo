@@ -505,16 +505,20 @@ carregarLeilaoEIniciarTimer();
   alert('💸 Lance enviado: $' + Number(novo).toLocaleString());
 }
     // Tempo real: quando entrar um lance, atualiza o valor na tela
-    supabase
-      .channel('bids-live')
-      .on('postgres_changes', { event:'INSERT', schema:'public', table:'bids' }, payload => {
-        const amt = Number(payload.new.amount || 0);
-        const span = document.querySelector('#lance-atual');
-        if(span) span.textContent = '$' + amt.toLocaleString();
-        const log = document.querySelector('#log-lances');
-        if(log) log.innerHTML = 'Dealer — $'+amt.toLocaleString()+' • agora<br>' + log.innerHTML;
-      })
-      .subscribe();
+  supabase
+  .channel('bids-live')
+  .on('postgres_changes', { event:'INSERT', schema:'public', table:'bids' }, payload => {
+    const amt = Number(payload.new.amount || 0);
+    const span = document.querySelector('#lance-atual');
+    if(span) span.textContent = '$' + amt.toLocaleString();
+    const log = document.querySelector('#log-lances');
+    if(log) log.innerHTML = 'Dealer — $'+amt.toLocaleString()+' • agora<br>' + log.innerHTML;
+  })
+  .on('postgres_changes', { event:'UPDATE', schema:'public', table:'auctions' }, payload => {
+    // quando o Supabase avisar que o leilão mudou (ex.: ends_at estendido), reinicia o timer
+    carregarLeilaoEIniciarTimer();
+  })
+  .subscribe();
   </script>
 
 </body>
