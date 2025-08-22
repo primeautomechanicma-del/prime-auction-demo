@@ -83,53 +83,83 @@
     <div class="nav" id="nav"></div>
 
     <!-- 1) VENDEDOR -->
-    <section id="seller">
-      <div class="grid two-1">
-        <div class="card">
-          <div class="hd"><div class="title">Cadastro do carro</div><div class="muted">VIN, fotos guiadas, reserva.</div></div>
-          <div class="bd">
-            <div class="grid">
-              <label>VIN <input class="input" id="vin" value="1HGCV1F30JA123456"></label>
-              <div class="grid two">
-                <label>Quilometragem <input class="input" id="km" value="58,500"></label>
-                <label>Título <input class="input" id="titulo" value="Clean"></label>
-              </div>
-              <label>Reserva (mínimo) <input class="input" id="reserva" value="$17,500"></label>
+   <section id="seller">
+  <div class="grid two-1">
+    <!-- FORMULÁRIO -->
+    <div class="card">
+      <div class="hd">
+        <div class="title">Cadastro do carro</div>
+        <div class="muted">Preencha os dados básicos e salve.</div>
+      </div>
+      <div class="bd">
+        <div id="seller-alert" class="muted" style="display:none;margin-bottom:10px"></div>
 
-              <div>
-                <div class="muted" style="font-weight:700">Fotos (guiado)</div>
-                <div class="grid three" style="margin-top:8px">
-                  <div class="thumb">+ Frente</div><div class="thumb">+ Traseira</div><div class="thumb">+ Painel</div>
-                  <div class="thumb">+ Interior</div><div class="thumb">+ Odom.</div><div class="thumb">+ Motor</div>
-                </div>
-              </div>
+        <div class="grid">
+          <label>VIN
+            <input class="input" id="vin" maxlength="17" placeholder="17 caracteres" />
+          </label>
 
-              <div style="display:flex;gap:10px;flex-wrap:wrap">
-                <button class="btn">Salvar rascunho</button>
-                <button class="btn gold" onclick="salvarVeiculo()">Salvar no Supabase</button>
-              </div>
+          <div class="grid two">
+            <label>Quilometragem
+              <input class="input" id="km" inputmode="numeric" placeholder="ex: 58,500" />
+            </label>
+            <label>Título
+              <select class="input" id="titulo">
+                <option value="" hidden>Selecione</option>
+                <option value="Clean">Clean</option>
+                <option value="Salvage">Salvage</option>
+                <option value="Rebuilt">Rebuilt</option>
+              </select>
+            </label>
+          </div>
+
+          <label>Reserva (mínimo)
+            <input class="input" id="reserva" inputmode="numeric" placeholder="$17,500" />
+          </label>
+
+          <div>
+            <div class="muted" style="font-weight:700;margin-bottom:6px">Divulgações</div>
+            <div style="display:grid;gap:6px">
+              <label style="display:flex;gap:8px;align-items:center">
+                <input type="checkbox" id="disc-motor" /> Sem luz de motor
+              </label>
+              <label style="display:flex;gap:8px;align-items:center">
+                <input type="checkbox" id="disc-estrutural" /> Sem danos estruturais
+              </label>
+              <label style="display:flex;gap:8px;align-items:center">
+                <input type="checkbox" id="disc-inundacao" /> Sem histórico de inundação
+              </label>
             </div>
           </div>
-        </div>
 
-        <div class="card">
-          <div class="hd"><div class="title" style="font-size:18px">Resumo</div></div>
-          <div class="bd">
-            <div style="display:flex;justify-content:space-between"><span class="muted">Carro</span><b>2019 Honda Accord Sport</b></div>
-            <div style="display:flex;justify-content:space-between"><span class="muted">KM</span><span>58,500 mi</span></div>
-            <div style="display:flex;justify-content:space-between"><span class="muted">Título</span><span>Clean</span></div>
-            <div style="display:flex;justify-content:space-between"><span class="muted">Reserva</span><span>$17,500</span></div>
-            <div style="margin-top:10px">
-              <div class="muted" style="margin-bottom:6px">Divulgações</div>
-              <ul class="list">
-                <li>Sem luz de motor • Sem danos estruturais</li>
-                <li>Sem histórico de inundação</li>
-              </ul>
-            </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">
+            <button id="btn-draft" class="btn">Salvar rascunho</button>
+            <button id="btn-save" class="btn gold" onclick="salvarVeiculo()">Salvar no Supabase</button>
           </div>
+
+          <div id="seller-success" class="badge" style="display:none;margin-top:8px">✅ Salvo com sucesso</div>
         </div>
       </div>
-    </section>
+    </div>
+
+    <!-- RESUMO -->
+    <div class="card">
+      <div class="hd"><div class="title" style="font-size:18px">Resumo</div></div>
+      <div class="bd">
+        <div style="display:flex;justify-content:space-between"><span class="muted">Carro</span><b id="resumo-carro">—</b></div>
+        <div style="display:flex;justify-content:space-between"><span class="muted">KM</span><span id="resumo-km">—</span></div>
+        <div style="display:flex;justify-content:space-between"><span class="muted">Título</span><span id="resumo-titulo">—</span></div>
+        <div style="display:flex;justify-content:space-between"><span class="muted">Reserva</span><span id="resumo-reserva">—</span></div>
+        <div style="margin-top:10px">
+          <div class="muted" style="margin-bottom:6px">Divulgações</div>
+          <ul class="list" id="resumo-divs">
+            <li>—</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
     <!-- 2) PÁGINA DO LEILÃO -->
     <section id="auction" class="hidden">
@@ -414,7 +444,121 @@
   const SUPABASE_URL  = 'https://jzijuaaqwtmmpuiljhuy.supabase.co';
   const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6aWp1YWFxd3RtbXB1aWxqaHV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4ODc2MDQsImV4cCI6MjA3MTQ2MzYwNH0.5vCINb3Ikmm80WbfoC0yO7e1nHxRiKtZU_Wxf6OdTkI';
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+// ===== MÓDULO 1 — Cadastro de carros =====
+(function(){
+  // helpers
+  const $ = sel => document.querySelector(sel);
+  const digits = s => String(s||'').replace(/\D/g,'');
+  const money = n => '$' + Number(n||0).toLocaleString();
 
+  // máscaras simples em tempo real
+  const kmEl = $('#km');
+  const resEl = $('#reserva');
+  if(kmEl){
+    kmEl.addEventListener('input', e=>{
+      const v = digits(e.target.value);
+      e.target.value = Number(v||0).toLocaleString();
+      $('#resumo-km').textContent = e.target.value ? ${e.target.value} mi : '—';
+    });
+  }
+  if(resEl){
+    resEl.addEventListener('input', e=>{
+      const v = digits(e.target.value);
+      e.target.value = v ? money(v) : '';
+      $('#resumo-reserva').textContent = e.target.value || '—';
+    });
+  }
+  // VIN / título refletem no resumo
+  $('#vin')?.addEventListener('input', e=>{
+    $('#resumo-carro').textContent = e.target.value ? VIN ${e.target.value} : '—';
+  });
+  $('#titulo')?.addEventListener('change', e=>{
+    $('#resumo-titulo').textContent = e.target.value || '—';
+  });
+  ['#disc-motor','#disc-estrutural','#disc-inundacao'].forEach(id=>{
+    $(id)?.addEventListener('change', atualizarResumoDivs);
+  });
+  function atualizarResumoDivs(){
+    const itens = [];
+    if($('#disc-motor')?.checked) itens.push('Sem luz de motor');
+    if($('#disc-estrutural')?.checked) itens.push('Sem danos estruturais');
+    if($('#disc-inundacao')?.checked) itens.push('Sem histórico de inundação');
+    const ul = $('#resumo-divs');
+    ul.innerHTML = itens.length ? itens.map(t=><li>${t}</li>).join('') : '<li>—</li>';
+  }
+  atualizarResumoDivs();
+
+  function setEstadoSalvando(salvando){
+    const btn = $('#btn-save');
+    if(!btn) return;
+    btn.disabled = salvando;
+    btn.textContent = salvando ? 'Salvando…' : 'Salvar no Supabase';
+  }
+  function showMsg(msg, tipo='erro'){
+    const el = $('#seller-alert');
+    if(!el) return;
+    el.style.display = 'block';
+    el.style.color = tipo==='erro' ? '#f87171' : '#a7f3d0';
+    el.textContent = msg;
+  }
+  function clearMsg(){ const el=$('#seller-alert'); if(el){ el.style.display='none'; el.textContent=''; } }
+
+  function validar(){
+    const vin = $('#vin')?.value.trim() || '';
+    const km  = digits($('#km')?.value);
+    const titulo = $('#titulo')?.value || '';
+    const res = digits($('#reserva')?.value);
+
+    if(vin.length !== 17) return { ok:false, msg:'VIN precisa ter 17 caracteres.' };
+    if(!km)               return { ok:false, msg:'Informe a quilometragem.' };
+    if(!titulo)           return { ok:false, msg:'Selecione o título.' };
+    if(!res)              return { ok:false, msg:'Informe a reserva (valor).' };
+
+    return { ok:true, data:{ vin, mileage:Number(km), title_brand:titulo, reserve:Number(res) } };
+  }
+
+  // expõe no escopo global para o onclick do botão
+  window.salvarVeiculo = async function (){
+    clearMsg();
+    const v = validar();
+    if(!v.ok){ showMsg(v.msg,'erro'); return; }
+
+    setEstadoSalvando(true);
+    try{
+      // divulgações como JSON simples (opcional)
+      const disclosures = {
+        no_engine_light: !!$('#disc-motor')?.checked,
+        no_structural:   !!$('#disc-estrutural')?.checked,
+        no_flood:        !!$('#disc-inundacao')?.checked,
+      };
+
+      const { data, error } = await supabase
+        .from('vehicles')
+        .insert([{
+          vin: v.data.vin,
+          mileage: v.data.mileage,
+          title_brand: v.data.title_brand,
+          reserve: v.data.reserve,
+          status: 'listed',
+          disclosures
+        }])
+        .select();
+
+      if(error) throw error;
+
+      // feedback
+      $('#seller-success').style.display = 'inline-flex';
+      showMsg(✅ Veículo salvo! ID ${data[0].id}, 'ok');
+
+      // (Opcional) limpar formulário:
+      // ['#vin','#km','#reserva'].forEach(id=>{ const el=$(id); if(el) el.value=''; });
+    }catch(e){
+      showMsg('Erro ao salvar: ' + (e.message||e), 'erro');
+    }finally{
+      setEstadoSalvando(false);
+    }
+  };
+})();
   // ===== HELPERS =====
   function money(n){ return '$' + Number(n||0).toLocaleString(); }
 
