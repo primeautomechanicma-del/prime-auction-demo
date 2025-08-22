@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prime Auction — Protótipo (Sem Dependências)</title>
+<style>
+  :root{
+    --bg:#f5f7fb; --txt:#0f172a; --muted:#64748b; --card:#ffffff; --border:#e2e8f0; --accent:#000;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(to bottom,#f8fafc,#eef2f7);color:var(--txt);font:16px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial}
+  .topbar{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.75);backdrop-filter:saturate(180%) blur(8px);border-bottom:1px solid var(--border)}
+  .wrap{max-width:1120px;margin:0 auto;padding:16px 20px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:40px;height:40px;border-radius:14px;background:#000;color:#fff;display:grid;place-items:center;font-weight:700}
+  .muted{color:var(--muted)}
+  .grid{display:grid;gap:16px}
+  .nav{display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:12px;margin:16px 0}
+  @media(min-width:720px){.nav{grid-template-columns:repeat(3,1fr)}}
+  @media(min-width:1024px){.nav{grid-template-columns:repeat(7,1fr)}}
+  .tabbtn{padding:12px;border:1px solid var(--border);border-radius:16px;background:#fff;text-align:left;cursor:pointer}
+  .tabbtn.active{outline:2px solid var(--accent)}
+  .card{background:#fff;border:1px solid var(--border);border-radius:18px;box-shadow:0 5px 14px rgba(15,23,42,.04)}
+  .card .hd{padding:16px;border-bottom:1px solid var(--border)}
+  .card .bd{padding:16px}
+  .btn{padding:10px 14px;border-radius:12px;border:1px solid var(--border);background:#0f172a;color:#fff;cursor:pointer}
+  .btn.ghost{background:#f8fafc;color:#0f172a}
+  .row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:6px 0}
+  .badge{display:inline-flex;align-items:center;font-size:12px;background:#f1f5f9;border-radius:999px;padding:2px 8px;color:#334155}
+  .input, .select, .textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:#fff}
+  .textarea{min-height:96px;resize:vertical}
+  .cols{display:grid;gap:16px}
+  @media(min-width:960px){.cols{grid-template-columns:2fr 1fr}}
+  .cols3{display:grid;gap:16px}
+  @media(min-width:1024px){.cols3{grid-template-columns:2fr 1fr 1fr}}
+  .thumb{aspect-ratio:1/1;border-radius:12px;background:#f1f5f9;display:grid;place-items:center;color:#94a3b8;font-size:12px}
+  .hidden{display:none}
+  .title{font-size:20px;font-weight:700}
+  .section{margin-bottom:18px}
+  .list{padding-left:18px}
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;height:64px">
+      <div class="brand">
+        <div class="logo">PR</div>
+        <div>
+          <div style="font-weight:600;line-height:1">Prime Auction</div>
+          <div class="muted" style="font-size:12px;margin-top:-2px">Leilões Consumer → Dealer</div>
+        </div>
+      </div>
+      <div style="display:none;gap:8px" class="mdonly">
+        <button class="btn">Entrar</button>
+        <button class="btn ghost">Criar conta</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="nav" id="nav"></div>
+
+    <!-- Sections -->
+    <section id="seller" class="section">
+      <div class="cols">
+        <div class="card">
+          <div class="hd"><div class="title">Cadastro do carro</div><div class="muted" style="font-size:14px">VIN → decodificação automática, checklist e preço de reserva.</div></div>
+          <div class="bd">
+            <div class="grid" style="grid-template-columns:1fr;gap:12px">
+              <label>VIN <input class="input" value="1HGCV1F30JA123456"></label>
+              <label>Quilometragem <input class="input" value="58,500"></label>
+              <label>Título <input class="input" value="Clean"></label>
+              <label>Reserva (mínimo) <input class="input" value="$17,500"></label>
+              <div>
+                <div class="muted" style="font-size:14px;font-weight:600">Fotos (guiado)</div>
+                <div class="grid" style="grid-template-columns:repeat(6,1fr);gap:8px;margin-top:8px">
+                  <div class="thumb">+ Frente</div><div class="thumb">+ Traseira</div><div class="thumb">+ Painel</div>
+                  <div class="thumb">+ Foto</div><div class="thumb">+ Foto</div><div class="thumb">+ Foto</div>
+                </div>
+                <div class="muted" style="font-size:12px;margin-top:8px">Dica: vídeo do motor e snapshot OBD (opcional).</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:14px">
+              <button class="btn">Pré-visualizar leilão</button>
+              <button class="btn ghost">Salvar rascunho</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="hd"><div class="title" style="font-size:16px">Resumo</div></div>
+          <div class="bd">
+            <div class="row"><div class="muted">Carro</div><div><b>2019 Honda Accord Sport</b></div></div>
+            <div class="row"><div class="muted">KM</div><div>58,500 mi</div></div>
+            <div class="row"><div class="muted">Título</div><div>Clean</div></div>
+            <div class="row"><div class="muted">Reserva</div><div>$17,500</div></div>
+            <div class="row"><div class="muted">Janela</div><div>24h (anti-sniping +2min)</div></div>
+            <div class="row" style="display:block">
+              <div class="muted" style="margin-bottom:6px">Divulgações</div>
+              <ul class="list">
+                <li>Sem luz de motor</li>
+                <li>Sem histórico de inundação</li>
+                <li>Sem danos estruturais</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="auction" class="section hidden">
+      <div class="cols3">
+        <div class="card" style="grid-column:1 / span 2">
+          <div class="hd">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div class="title">2019 Honda Accord <span class="muted">Sport 2.0T</span></div>
+              <span class="badge">VIN • 123456</span>
+            </div>
+            <div class="muted" style="font-size:14px">58,500 mi • Título Clean</div>
+          </div>
+          <div class="bd">
+            <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+              <div style="aspect-ratio:16/9;border-radius:16px;background:#f1f5f9;display:grid;place-items:center">Galeria (fotos/vídeo)</div>
+              <div>
+                <div style="display:flex;justify-content:space-between">
+                  <div><div class="muted" style="font-size:14px">Tempo restante</div><div class="title">00:01:37</div></div>
+                  <div style="text-align:right"><div class="muted" style="font-size:14px">Lance atual</div><div class="title">$17,650</div><div class="muted" style="font-size:12px;color:#16a34a">Acima da reserva</div></div>
+                </div>
+                <div style="margin-top:10px">
+                  <div class="muted" style="font-size:14px;font-weight:600">Seu lance</div>
+                  <div style="display:flex;gap:8px;margin-top:6px">
+                    <input class="input" placeholder="$17,700">
+                    <button class="btn">Dar lance</button>
+                  </div>
+                  <div class="muted" style="font-size:12px;margin-top:4px">Incremento mínimo $100 • Anti-sniping +2min</div>
+                </div>
+                <div style="margin-top:12px">
+                  <div style="font-weight:600;margin-bottom:6px">Histórico de lances</div>
+                  <div class="muted" style="max-height:140px;overflow:auto">
+                    Prime Motors — $16,800 • 12:02<br>
+                    Westline Auto — $17,100 • 12:10<br>
+                    Superior Cars — $17,650 • 12:13
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid" style="grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px">
+              <div class="card">
+                <div class="hd" style="border:none"><b>Condição & divulgações</b></div>
+                <div class="bd"><ul class="list"><li>Sem luz de motor</li><li>Freios 70%</li><li>2 chaves</li></ul></div>
+              </div>
+              <div class="card">
+                <div class="hd" style="border:none"><b>Perguntas (Q&A)</b></div>
+                <div class="bd">
+                  <div class="muted">Westline Auto: Algum histórico de pintura?</div>
+                  <div class="muted">Vendedor: Capô repintado.</div>
+                  <input class="input" placeholder="Fazer pergunta" style="margin-top:8px">
+                </div>
+              </div>
+              <div class="card">
+                <div class="hd" style="border:none"><b>Ações do vendedor</b></div>
+                <div class="bd">
+                  <button class="btn" style="width:100%;margin-bottom:8px">Aceitar oferta</button>
+                  <button class="btn ghost" style="width:100%;margin-bottom:8px">Enviar contra-oferta</button>
+                  <button class="btn ghost" style="width:100%">Cancelar leilão</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="hd"><b>Regras rápidas</b></div>
+          <div class="bd">
+            <ul class="list">
+              <li>Duração: 24h</li>
+              <li>Anti-sniping: +2min</li>
+              <li>Incremento mínimo: $100</li>
+              <li>Depósito do vencedor: 10%</li>
+              <li>Arbitragem: 48h/100mi</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="dealer" class="section hidden">
+      <div class="grid" style="grid-template-columns:1fr 2fr;gap:16px">
+        <div class="card">
+          <div class="hd"><b>Filtros</b></div>
+          <div class="bd">
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+              <span class="badge">Sedan</span><span class="badge">SUV</span><span class="badge">Pickup</span>
+              <span class="badge">&lt;100k mi</span><span class="badge">Clean title</span><span class="badge">&gt;2015</span>
+            </div>
+            <label>Raio <input class="input" placeholder="até 150 milhas"></label>
+            <label style="margin-top:8px">Preço máx. <input class="input" placeholder="$25,000"></label>
+            <button class="btn" style="width:100%;margin-top:10px">Aplicar filtros</button>
+          </div>
+        </div>
+        <div class="grid" style="grid-template-columns:repeat(2,1fr);gap:12px">
+          <div class="card"><div style="aspect-ratio:16/9;background:#f1f5f9;border-radius:18px 18px 0 0"></div>
+            <div class="bd"><div style="display:flex;justify-content:space-between"><div><b>2018 Toyota Camry SE</b><div class="muted">72,000 mi • Clean</div></div><div style="text-align:right"><div class="muted" style="font-size:12px">Lance</div><b>$14,500</b><div class="muted" style="font-size:12px">00:32:10</div></div></div><div style="display:flex;gap:8px;margin-top:8px"><button class="btn">Dar lance</button><button class="btn ghost">Watchlist</button></div></div></div>
+          <div class="card"><div style="aspect-ratio:16/9;background:#f1f5f9;border-radius:18px 18px 0 0"></div>
+            <div class="bd"><div style="display:flex;justify-content:space-between"><div><b>2017 Ford F-150 XLT</b><div class="muted">98,000 mi • Clean</div></div><div style="text-align:right"><div class="muted" style="font-size:12px">Lance</div><b>$22,100</b><div class="muted" style="font-size:12px">01:12:44</div></div></div><div style="display:flex;gap:8px;margin-top:8px"><button class="btn">Dar lance</button><button class="btn ghost">Watchlist</button></div></div></div>
+          <div class="card"><div style="aspect-ratio:16/9;background:#f1f5f9;border-radius:18px 18px 0 0"></div>
+            <div class="bd"><div style="display:flex;justify-content:space-between"><div><b>2019 Honda Accord Sport</b><div class="muted">58,500 mi • Clean</div></div><div style="text-align:right"><div class="muted" style="font-size:12px">Lance</div><b>$17,650</b><div class="muted" style="font-size:12px">00:01:37</div></div></div><div style="display:flex;gap:8px;margin-top:8px"><button class="btn">Dar lance</button><button class="btn ghost">Watchlist</button></div></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="checkout" class="section hidden">
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px">
+        <div class="card">
+          <div class="hd"><b>Resumo da transação</b></div>
+          <div class="bd">
+            <div class="row"><div class="muted">Veículo</div><div>2019 Honda Accord</div></div>
+            <div class="row"><div class="muted">Lance vencedor</div><div>$17,650</div></div>
+            <div class="row"><div class="muted">Buyer fee (2%)</div><div>$353</div></div>
+            <div class="row"><div class="muted">Depósito (10%)</div><div>$1,765</div></div>
+            <div class="row"><div class="muted">Status do título</div><div>Clean</div></div>
+            <button class="btn" style="width:100%;margin-top:10px">Pagar depósito via Stripe</button>
+            <div class="muted" style="font-size:12px;margin-top:6px">Escrow mantém o valor até a entrega do título e coleta.</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="hd"><b>Checklist de conformidade</b></div>
+          <div class="bd">
+            <ul class="list">
+              <li>KYC do comprador (EIN, W-9)</li>
+              <li>Contrato As-Is aceito</li>
+              <li>Odometer disclosure (e-sign)</li>
+              <li>Comprovante de seguro do transporte</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="logistics" class="section hidden">
+      <div class="grid" style="grid-template-columns:2fr 1fr;gap:16px">
+        <div class="card">
+          <div class="hd"><b>Coleta do veículo</b></div>
+          <div class="bd">
+            <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+              <div><div class="muted">Endereço de retirada</div><div class="input" style="padding:12px">886 Middlesex St, Lowell, MA</div></div>
+              <div><div class="muted">Janela de coleta</div><div class="input" style="padding:12px">Qui, 14:00–18:00</div></div>
+              <div style="grid-column:1 / -1"><div class="muted">Transportadora</div><div class="input" style="padding:12px">AutoHaul Express • ETA 08/24</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="hd"><b>Título & Payoff</b></div>
+          <div class="bd">
+            <div class="row"><div class="muted">Banco (lien)</div><div>Capital One Auto</div></div>
+            <div class="row"><div class="muted">Payoff</div><div>$9,240</div></div>
+            <div class="row"><div class="muted">Vencimento carta</div><div>08/30</div></div>
+            <button class="btn" style="width:100%;margin-top:8px">Enviar carta de payoff</button>
+            <div class="muted" style="font-size:12px;margin-top:6px">Escrow paga o banco; saldo vai ao vendedor após confirmação do título.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="arbitration" class="section hidden">
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px">
+        <div class="card">
+          <div class="hd"><b>Abrir disputa (48h / 100mi)</b></div>
+          <div class="bd">
+            <label>Motivo
+              <select class="select">
+                <option hidden>Selecione</option>
+                <option>Problema mecânico não divulgado</option>
+                <option>Structural damage</option>
+                <option>Title brand divergente</option>
+                <option>Odômetro inconsistente</option>
+              </select>
+            </label>
+            <label style="margin-top:8px">Descrição
+              <textarea class="textarea" placeholder="Descreva o problema e o impacto"></textarea>
+            </label>
+            <div style="margin-top:8px">
+              <div class="muted" style="font-size:14px;font-weight:600">Evidências</div>
+              <div class="grid" style="grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px">
+                <div class="thumb">+ upload</div><div class="thumb">+ upload</div><div class="thumb">+ upload</div>
+              </div>
+            </div>
+            <button class="btn" style="margin-top:10px">Enviar disputa</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="hd"><b>Política (resumo)</b></div>
+          <div class="bd">
+            <ul class="list">
+              <li>Somente itens materiais não divulgados.</li>
+              <li>Janela: 48 horas ou 100 milhas (o que ocorrer primeiro).</li>
+              <li>Resoluções: ajuste de preço ou cancelamento.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="onboarding" class="section hidden">
+      <div class="card">
+        <div class="hd"><div class="title">Onboarding do lojista</div><div class="muted" style="font-size:14px">Validação de licença e documentos antes de dar lances.</div></div>
+        <div class="bd">
+          <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+            <label>Nome da concessionária <input class="input" placeholder="Prime Motors"></label>
+            <label>Dealer License # <input class="input" placeholder="DL-123456"></label>
+            <label>EIN <input class="input" placeholder="12-3456789"></label>
+            <label>Endereço comercial <input class="input" placeholder="886 Middlesex St, Lowell, MA"></label>
+          </div>
+          <div style="margin-top:8px">
+            <div class="muted" style="font-size:14px;font-weight:600">Upload de documentos</div>
+            <div class="grid" style="grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px">
+              <div class="thumb">+ Licença</div>
+              <div class="thumb">+ W-9</div>
+              <div class="thumb">+ Seguro</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:12px">
+            <button class="btn">Enviar para verificação</button>
+            <button class="btn ghost">Salvar rascunho</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    const tabs = [
+      {key:'seller', label:'1) Vendedor – Cadastro do carro'},
+      {key:'auction', label:'2) Página do leilão (tempo real)'},
+      {key:'dealer', label:'3) Painel do lojista'},
+      {key:'checkout', label:'4) Checkout / Escrow'},
+      {key:'logistics', label:'5) Coleta & Título'},
+      {key:'arbitration', label:'6) Arbitragem'},
+      {key:'onboarding', label:'7) Onboarding do lojista'}
+    ];
+    const nav = document.getElementById('nav');
+    let active = 'seller';
+    function renderNav(){
+      nav.innerHTML='';
+      tabs.forEach(t=>{
+        const b=document.createElement('button');
+        b.className='tabbtn'+(t.key===active?' active':'');
+        b.innerHTML='<div class="muted" style="font-size:12px">Wireframe</div><div style="font-weight:600">'+t.label+'</div>';
+        b.onclick=()=>{active=t.key;update();};
+        nav.appendChild(b);
+      });
+    }
+    function update(){
+      renderNav();
+      tabs.forEach(t=>{
+        const el=document.getElementById(t.key);
+        if(!el) return;
+        el.classList.toggle('hidden', t.key!==active);
+      });
+    }
+    update();
+  </script>
+</body>
+</html>
