@@ -477,7 +477,35 @@ async function carregarLeilao(){
 
     // Lance simples: pega o leilão mais recente e soma +$100
     async function darLanceSimples(){
-      const { data: aucts, error } = await supabase
+      const { data: aucts, error }async function darLanceSimples(){
+  // garante que temos o leilão carregado
+  if(!currentAuction) await carregarLeilao();
+  if(!currentAuction){ alert('Crie um veículo/leilão primeiro.'); return; }
+
+  const atual = Number(currentAuction.current_bid || 0);
+  const input = document.getElementById('lance-input')?.value || '';
+  let valorDigitado = Number(String(input).replace(/[^\d.]/g,'')) || 0;
+
+  // se não digitou nada, usa +100; se digitou, garante pelo menos +100 sobre o atual
+  let novo = valorDigitado>0 ? Math.max(valorDigitado, atual+100) : (atual+100);
+
+  // grava o lance
+  const { error: e1 } = await supabase.from('bids').insert([{ auction_id: currentAuction.id, dealer_id: null, amount: novo }]);
+  if(e1){ alert('Erro ao registrar lance: '+e1.message); return; }
+
+  // atualiza lance atual
+  const { error: e2 } = await supabase.from('auctions').update({ current_bid: novo }).eq('id', currentAuction.id);
+  if(e2){ alert('Erro ao atualizar leilão: '+e2.message); return; }
+
+  // Anti-sniping: se restarem < 120s, estende +120s
+  const rest = (new Date(currentAuction.ends_at).getTime() - Date.now())/1000;
+  if(rest < 120){
+    const novoFim = new Date(Date.now() + (rest>0?rest:0)*1000 + 120*1000).toISOString();
+    await supabase.from('auctions').update({ ends_at: novoFim }).eq('id', currentAuction.id);
+  }
+
+  alert('💸 Lance enviado: ' + formatMoney(novo));
+} = await supabase
         .from('auctions').select('*').order('created_at', { ascending:false }).limit(1);
       if(error || !aucts?.length){ alert('Crie um veículo/leilão primeiro.'); return; }
 
