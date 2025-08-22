@@ -1,189 +1,531 @@
 <!doctype html>
 <html lang="pt-br">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Prime Motors Auction — Cadastro de carro</title>
-  <style>
-    body{margin:0;background:#0f1115;color:#eaeef5;font:16px/1.5 ui-sans-serif,system-ui,Segoe UI,Roboto,Arial}
-    .wrap{max-width:1120px;margin:24px auto;padding:0 16px}
-    .card{background:#141823;border:1px solid #2a2f3a;border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.22)}
-    .row{display:flex;gap:16px;flex-wrap:wrap}
-    .col{flex:1 1 320px;min-width:260px}
-    label{display:block;margin:12px 0 6px;color:#93a4bf}
-    input,select{width:100%;padding:12px 14px;border-radius:10px;border:1px solid #2a2f3a;background:#0f131c;color:#eaeef5}
-    .btn{background:#1b73e8;border:0;color:#fff;padding:12px 16px;border-radius:10px;cursor:pointer}
-    .btn:disabled{opacity:.6;cursor:not-allowed}
-    .btn.alt{background:#2f3644}
-    .title{padding:18px 18px 0;font-weight:700}
-    .box{padding:18px}
-    .muted{color:#8da2c6}
-    .summary{min-height:120px}
-    img#foto-carro{max-width:100%;border-radius:12px;margin-top:12px;display:none}
-  </style>
-  <!-- supabase-js (cdn) -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prime Motors Auction — Protótipo</title>
+<style>
+  :root{
+    --pm-bg:#0a0a0a; --pm-card:#111317; --pm-border:#1f232b;
+    --pm-text:#f7f7f8; --pm-muted:#a1a1aa; --pm-gold:#d4af37; --pm-gold-2:#c49a2c;
+    --pm-shadow:0 10px 24px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; color:var(--pm-text);
+    background:
+      radial-gradient(1200px 600px at 0% -10%, rgba(212,175,55,.12), transparent 60%),
+      radial-gradient(900px 500px at 100% 110%, rgba(196,154,44,.10), transparent 60%),
+      linear-gradient(#0b0b0c,#0a0a0a);
+    font:16px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+  }
+  .topbar{position:sticky;top:0;z-index:10;border-bottom:1px solid var(--pm-border);
+          background:rgba(10,10,10,.7);backdrop-filter:saturate(160%) blur(8px)}
+  .wrap{max-width:1120px;margin:0 auto;padding:16px 20px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:44px;height:44px;border-radius:12px;background:linear-gradient(145deg,#000,#161616);
+        display:grid;place-items:center;box-shadow:var(--pm-shadow);position:relative}
+  .logo::after{content:"PM";font-weight:800;letter-spacing:.5px;color:var(--pm-gold);
+               text-shadow:0 0 14px rgba(212,175,55,.45)}
+  .brand-title{font-weight:700;letter-spacing:.3px}
+  .brand-sub{font-size:12px;color:var(--pm-muted);margin-top:-2px}
+  .nav{display:grid;gap:12px;margin:18px 0}
+  @media(min-width:720px){.nav{grid-template-columns:repeat(3,1fr)}}
+  @media(min-width:1024px){.nav{grid-template-columns:repeat(7,1fr)}}
+  .tabbtn{padding:12px;border:1px solid var(--pm-border);border-radius:14px;
+          background:linear-gradient(180deg,#121417,#0e1013);color:var(--pm-text);
+          text-align:left;cursor:pointer;box-shadow:var(--pm-shadow);transition:.15s}
+  .tabbtn:hover{transform:translateY(-1px)}
+  .tabbtn.active{outline:2px solid var(--pm-gold);box-shadow:0 0 0 3px rgba(212,175,55,.15),var(--pm-shadow)}
+  .muted{color:var(--pm-muted)}
+  .hidden{display:none}
+  .card{background:linear-gradient(180deg,#121417,#0c0e11);border:1px solid var(--pm-border);
+        border-radius:16px;box-shadow:var(--pm-shadow)}
+  .card .hd{padding:16px;border-bottom:1px solid var(--pm-border)}
+  .card .bd{padding:16px}
+  .title{font-size:20px;font-weight:800;letter-spacing:.2px}
+  .input,.select,.textarea{width:100%;padding:12px;border-radius:12px;background:#0b0d10;border:1px solid var(--pm-border);color:var(--pm-text)}
+  .textarea{min-height:96px;resize:vertical}
+  .btn{padding:10px 14px;border-radius:12px;border:1px solid #000;background:linear-gradient(180deg,#1b1b1c,#0f0f10);color:#fff;cursor:pointer;box-shadow:var(--pm-shadow)}
+  .btn.gold{border-color:#a07f1a;background:linear-gradient(180deg,var(--pm-gold),var(--pm-gold-2));color:#111;font-weight:700;text-shadow:0 1px 0 rgba(255,255,255,.25)}
+  .grid{display:grid;gap:16px}
+  .two{grid-template-columns:1fr 1fr}
+  .three{grid-template-columns:repeat(3,1fr)}
+  .two-1{grid-template-columns:2fr 1fr}
+  .two-2{grid-template-columns:2fr 2fr}
+  .two-1-1{grid-template-columns:2fr 1fr 1fr}
+  @media(max-width:960px){.two,.two-1,.two-2,.two-1-1,.three{grid-template-columns:1fr}}
+  .badge{display:inline-flex;align-items:center;font-size:12px;color:#cbd5e1;background:#0b0d10;border:1px solid var(--pm-border);border-radius:999px;padding:2px 8px}
+  .thumb{aspect-ratio:1/1;border-radius:10px;background:#0b0d10;border:1px dashed #2a2f37;display:grid;place-items:center;color:#475569;font-size:12px}
+  .list{padding-left:18px}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <h2 style="margin:8px 0 18px;">Prime Motors Auction — <span class="muted">Cadastro de carro</span></h2>
-
-    <div class="row">
-      <!-- Formulário -->
-      <div class="col card">
-        <div class="title">Dados do veículo</div>
-        <div class="box">
-          <label>VIN</label>
-          <div class="row" style="align-items:flex-end">
-            <div class="col">
-              <input id="vin" placeholder="Digite o VIN (17 caracteres)" />
-            </div>
-            <button class="btn" onclick="decodificarVIN()">Buscar pelo VIN</button>
-          </div>
-
-          <div class="row">
-            <div class="col">
-              <label>Quilometragem</label>
-              <input id="km" placeholder="ex.: 58,500" />
-            </div>
-            <div class="col">
-              <label>Título</label>
-              <select id="titulo">
-                <option value="Clean">Clean</option>
-                <option value="Salvage">Salvage</option>
-                <option value="Rebuilt">Rebuilt</option>
-              </select>
-            </div>
-          </div>
-
-          <label>Reserva (mínimo)</label>
-          <input id="reserva" placeholder="ex.: 8,000" />
-
-          <div style="margin-top:18px;display:flex;gap:8px">
-            <button id="btn-save" class="btn">Salvar no Supabase</button>
-            <button class="btn alt" onclick="limpar()">Limpar</button>
-          </div>
+  <!-- TOPO -->
+  <div class="topbar">
+    <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;height:72px">
+      <div class="brand">
+        <div class="logo" title="Sua logo aqui"></div>
+        <div>
+          <div class="brand-title">Prime Motors Auction</div>
+          <div class="brand-sub">Consumer → Dealer • confiança e transparência</div>
         </div>
       </div>
-
-      <!-- Resumo -->
-      <div class="col card">
-        <div class="title">Resumo</div>
-        <div class="box summary">
-          <div class="muted">Carro</div>
-          <div id="resumo-carro" style="font-weight:700;margin-bottom:10px">—</div>
-
-          <div class="muted">Foto</div>
-          <img id="foto-carro" alt="Foto do carro" />
-        </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn">Entrar</button>
+        <button class="btn gold">Criar conta</button>
       </div>
     </div>
   </div>
 
+  <div class="wrap">
+    <!-- NAVEGAÇÃO -->
+    <div class="nav" id="nav"></div>
+
+    <!-- 1) VENDEDOR -->
+    <section id="seller">
+      <div class="grid two-1">
+        <div class="card">
+          <div class="hd"><div class="title">Cadastro do carro</div><div class="muted">VIN, fotos guiadas, reserva.</div></div>
+          <div class="bd">
+            <div class="grid">
+              <label>VIN <input class="input" id="vin" value="1HGCV1F30JA123456"></label>
+              <div class="grid two">
+                <label>Quilometragem <input class="input" id="km" value="58,500"></label>
+                <label>Título <input class="input" id="titulo" value="Clean"></label>
+              </div>
+              <label>Reserva (mínimo) <input class="input" id="reserva" value="$17,500"></label>
+
+              <div>
+                <div class="muted" style="font-weight:700">Fotos (guiado)</div>
+                <div class="grid three" style="margin-top:8px">
+                  <div class="thumb">+ Frente</div><div class="thumb">+ Traseira</div><div class="thumb">+ Painel</div>
+                  <div class="thumb">+ Interior</div><div class="thumb">+ Odom.</div><div class="thumb">+ Motor</div>
+                </div>
+              </div>
+
+              <div style="display:flex;gap:10px;flex-wrap:wrap">
+                <button class="btn">Salvar rascunho</button>
+                <button class="btn gold" onclick="salvarVeiculo()">Salvar no Supabase</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="hd"><div class="title" style="font-size:18px">Resumo</div></div>
+          <div class="bd">
+            <div style="display:flex;justify-content:space-between"><span class="muted">Carro</span><b>2019 Honda Accord Sport</b></div>
+            <div style="display:flex;justify-content:space-between"><span class="muted">KM</span><span>58,500 mi</span></div>
+            <div style="display:flex;justify-content:space-between"><span class="muted">Título</span><span>Clean</span></div>
+            <div style="display:flex;justify-content:space-between"><span class="muted">Reserva</span><span>$17,500</span></div>
+            <div style="margin-top:10px">
+              <div class="muted" style="margin-bottom:6px">Divulgações</div>
+              <ul class="list">
+                <li>Sem luz de motor • Sem danos estruturais</li>
+                <li>Sem histórico de inundação</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2) PÁGINA DO LEILÃO -->
+    <section id="auction" class="hidden">
+      <div class="grid two-1-1">
+        <div class="card" style="grid-column:1 / span 2">
+          <div class="hd">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div class="title">2019 Honda Accord <span class="muted">Sport 2.0T</span></div>
+              <span class="badge">VIN • 123456</span>
+            </div>
+            <div class="muted">58,500 mi • Título Clean</div>
+          </div>
+          <div class="bd">
+            <div class="grid two">
+              <div style="aspect-ratio:16/9;border-radius:14px;background:#0b0d10;border:1px solid var(--pm-border);display:grid;place-items:center">
+                Galeria (fotos/vídeo)
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:flex-end">
+                  <div><div class="muted">Tempo restante</div><div class="title"><span id="tempo-restante">--:--:--</span></div></div>
+                  <div style="text-align:right">
+                    <div class="muted">Lance atual</div>
+                    <div class="title"><span id="lance-atual">$17,650</span></div>
+                    <div style="color:var(--pm-gold);font-size:12px">Acima da reserva</div>
+                  </div>
+                </div>
+                <div style="margin-top:10px">
+                  <div class="muted" style="font-weight:700">Seu lance</div>
+                  <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
+                    <input class="input" id="lance-input" placeholder="$17,700" style="max-width:180px">
+                    <button class="btn gold" onclick="darLanceSimples()">Dar lance</button>
+                  </div>
+                  <div class="muted" style="font-size:12px;margin-top:4px">Incremento mínimo $100 • Anti-sniping +2min</div>
+                </div>
+                <div style="margin-top:12px">
+                  <div style="font-weight:700;margin-bottom:6px">Histórico de lances</div>
+                  <div class="muted" id="log-lances" style="max-height:140px;overflow:auto">
+                    Prime Motors — $16,800 • 12:02<br>
+                    Westline Auto — $17,100 • 12:10<br>
+                    Superior Cars — $17,650 • 12:13
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid three" style="margin-top:14px">
+              <div class="card">
+                <div class="hd" style="border:none"><b>Condição & divulgações</b></div>
+                <div class="bd"><ul class="list"><li>Sem luz de motor</li><li>Freios 70%</li><li>2 chaves</li></ul></div>
+              </div>
+              <div class="card">
+                <div class="hd" style="border:none"><b>Perguntas (Q&A)</b></div>
+                <div class="bd">
+                  <div class="muted">Westline Auto: Algum histórico de pintura?</div>
+                  <div class="muted">Vendedor: Capô repintado.</div>
+                  <input class="input" placeholder="Fazer pergunta" style="margin-top:8px">
+                </div>
+              </div>
+              <div class="card">
+                <div class="hd" style="border:none"><b>Ações do vendedor</b></div>
+                <div class="bd">
+                  <button class="btn gold" style="width:100%;margin-bottom:8px">Aceitar oferta</button>
+                  <button class="btn" style="width:100%;margin-bottom:8px">Enviar contra-oferta</button>
+                  <button class="btn" style="width:100%">Cancelar leilão</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="hd"><b>Regras rápidas</b></div>
+          <div class="bd">
+            <ul class="list">
+              <li>Duração: 24h • Anti-sniping: +2min</li>
+              <li>Incremento mínimo: $100 • Depósito do vencedor: 10%</li>
+              <li>Arbitragem: 48h/100mi</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3) PAINEL DO LOJISTA (resumido para demo) -->
+    <section id="dealer" class="hidden">
+      <div class="grid two-2">
+        <div class="card">
+          <div class="hd"><b>Filtros</b></div>
+          <div class="bd">
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+              <span class="badge">Sedan</span><span class="badge">SUV</span><span class="badge">Pickup</span>
+              <span class="badge">&lt;100k mi</span><span class="badge">Clean title</span><span class="badge">&gt;2015</span>
+            </div>
+            <label>Raio <input class="input" placeholder="até 150 milhas"></label>
+            <label style="margin-top:8px">Preço máx. <input class="input" placeholder="$25,000"></label>
+            <button class="btn gold" style="width:100%;margin-top:10px">Aplicar filtros</button>
+          </div>
+        </div>
+
+        <div class="grid two" style="gap:16px">
+          <div class="card">
+            <div style="aspect-ratio:16/9;background:#0b0d10;border-bottom:1px solid var(--pm-border);border-radius:16px 16px 0 0"></div>
+            <div class="bd">
+              <div style="display:flex;justify-content:space-between">
+                <div><b>2018 Toyota Camry SE</b><div class="muted">72,000 mi • Clean</div></div>
+                <div style="text-align:right"><div class="muted" style="font-size:12px">Lance</div><b>$14,500</b><div class="muted" style="font-size:12px">00:32:10</div></div>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:8px"><button class="btn gold">Dar lance</button><button class="btn">Watchlist</button></div>
+            </div>
+          </div>
+          <div class="card">
+            <div style="aspect-ratio:16/9;background:#0b0d10;border-bottom:1px solid var(--pm-border);border-radius:16px 16px 0 0"></div>
+            <div class="bd">
+              <div style="display:flex;justify-content:space-between">
+                <div><b>2017 Ford F-150 XLT</b><div class="muted">98,000 mi • Clean</div></div>
+                <div style="text-align:right"><div class="muted" style="font-size:12px">Lance</div><b>$22,100</b><div class="muted" style="font-size:12px">01:12:44</div></div>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:8px"><button class="btn gold">Dar lance</button><button class="btn">Watchlist</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4) CHECKOUT -->
+    <section id="checkout" class="hidden">
+      <div class="grid two">
+        <div class="card">
+          <div class="hd"><b>Resumo da transação</b></div>
+          <div class="bd">
+            <div style="display:flex;justify-content:space-between"><span class="muted">Veículo</span><span>2019 Honda Accord</span></div>
+            <div style="display:flex;justify-content:space-between"><span class="muted">Lance vencedor</span><span id="resumo-lance">$17,650</span></div>
+            <div style="display:flex;justify-content:space-between"><span class="muted">Buyer fee (2%)</span><span>$353</span></div>
+            <div style="display:flex;justify-content:space-between"><span class="muted">Depósito (10%)</span><span>$1,765</span></div>
+            <button class="btn gold" style="width:100%;margin-top:10px">Pagar depósito via Stripe</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="hd"><b>Checklist de conformidade</b></div>
+          <div class="bd">
+            <ul class="list">
+              <li>KYC do comprador (EIN, W-9)</li>
+              <li>Contrato As-Is aceito</li>
+              <li>Odometer disclosure (e-sign)</li>
+              <li>Seguro de transporte válido</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5) LOGÍSTICA -->
+    <section id="logistics" class="hidden">
+      <div class="grid two">
+        <div class="card">
+          <div class="hd"><b>Coleta do veículo</b></div>
+          <div class="bd">
+            <div class="grid two">
+              <div><div class="muted">Endereço</div><div class="input" style="padding:12px">886 Middlesex St, Lowell, MA</div></div>
+              <div><div class="muted">Janela</div><div class="input" style="padding:12px">Qui, 14:00–18:00</div></div>
+            </div>
+            <div style="margin-top:8px"><div class="muted">Transportadora</div><div class="input" style="padding:12px">AutoHaul Express • ETA 08/24</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="hd"><b>Título & Payoff</b></div>
+          <div class="bd">
+            <div style="display:flex;justify-content:space-between"><span class="muted">Banco (lien)</span><span>Capital One Auto</span></div>
+            <div style="display:flex;justify-content:space-between"><span class="muted">Payoff</span><span>$9,240</span></div>
+            <div style="display:flex;justify-content:space-between"><span class="muted">Vencimento carta</span><span>08/30</span></div>
+            <button class="btn gold" style="width:100%;margin-top:8px">Enviar carta de payoff</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6) ARBITRAGEM -->
+    <section id="arbitration" class="hidden">
+      <div class="grid two">
+        <div class="card">
+          <div class="hd"><b>Abrir disputa (48h / 100mi)</b></div>
+          <div class="bd">
+            <label>Motivo
+              <select class="select">
+                <option hidden>Selecione</option>
+                <option>Problema mecânico não divulgado</option>
+                <option>Structural damage</option>
+                <option>Title brand divergente</option>
+                <option>Odômetro inconsistente</option>
+              </select>
+            </label>
+            <label style="margin-top:8px">Descrição
+              <textarea class="textarea" placeholder="Descreva o problema e o impacto"></textarea>
+            </label>
+            <div style="margin-top:8px">
+              <div class="muted" style="font-weight:700">Evidências</div>
+              <div class="grid three" style="margin-top:6px">
+                <div class="thumb">+ upload</div><div class="thumb">+ upload</div><div class="thumb">+ upload</div>
+              </div>
+            </div>
+            <button class="btn gold" style="margin-top:10px">Enviar disputa</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="hd"><b>Política (resumo)</b></div>
+          <div class="bd">
+            <ul class="list">
+              <li>Somente itens materiais não divulgados.</li>
+              <li>Janela: 48 horas ou 100 milhas.</li>
+              <li>Resoluções: ajuste de preço ou cancelamento.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7) ONBOARDING DO LOJISTA -->
+    <section id="onboarding" class="hidden">
+      <div class="card">
+        <div class="hd"><div class="title">Onboarding do lojista</div><div class="muted">Validação de licença e documentos.</div></div>
+        <div class="bd">
+          <div class="grid two">
+            <label>Nome da concessionária <input class="input" placeholder="Prime Motors"></label>
+            <label>Dealer License # <input class="input" placeholder="DL-123456"></label>
+            <label>EIN <input class="input" placeholder="12-3456789"></label>
+            <label>Endereço comercial <input class="input" placeholder="886 Middlesex St, Lowell, MA"></label>
+          </div>
+          <div style="margin-top:8px">
+            <div class="muted" style="font-weight:700">Upload de documentos</div>
+            <div class="grid three" style="margin-top:6px">
+              <div class="thumb">+ Licença</div><div class="thumb">+ W-9</div><div class="thumb">+ Seguro</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:12px">
+            <button class="btn gold">Enviar para verificação</button>
+            <button class="btn">Salvar rascunho</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Navegação entre telas -->
   <script>
-    // ===== Supabase config =====
-    const SUPABASE_URL  = "https://jzijuaaqwtmmpuiljhuy.supabase.co";
-    const SUPABASE_ANON = "PASTE_YOUR_SUPABASE_ANON_KEY_AQUI"; // <-- cole sua anon key aqui
+    const tabs=[
+      {key:'seller',label:'1) Cadastro do carro'},
+      {key:'auction',label:'2) Página do leilão'},
+      {key:'dealer',label:'3) Painel do lojista'},
+      {key:'checkout',label:'4) Checkout / Escrow'},
+      {key:'logistics',label:'5) Coleta & Título'},
+      {key:'arbitration',label:'6) Arbitragem'},
+      {key:'onboarding',label:'7) Onboarding do lojista'}
+    ];
+    let active='seller';
+    const nav=document.getElementById('nav');
+    function renderNav(){
+      nav.innerHTML='';
+      tabs.forEach(t=>{
+        const b=document.createElement('button');
+        b.className='tabbtn'+(t.key===active?' active':'');
+        b.innerHTML='<div class="muted" style="font-size:12px">Wireframe</div><div style="font-weight:700">'+t.label+'</div>';
+        b.onclick=()=>{active=t.key;update();};
+        nav.appendChild(b);
+      });
+    }
+    function update(){
+      renderNav();
+      tabs.forEach(t=>{
+        const el=document.getElementById(t.key);
+        if(el) el.classList.toggle('hidden',t.key!==active);
+        if(t.key==='auction' && t.key===active){ carregarLeilao(); } // carrega timer/lance ao abrir a aba
+      });
+    }
+    update();
+  </script>
+
+  <!-- Supabase SDK + funções -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // Conexão com seu Supabase
+    const SUPABASE_URL = 'https://jzijuaaqwtmmpuiljhuy.supabase.co';
+    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6aWp1YWFxd3RtbXB1aWxqaHV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4ODc2MDQsImV4cCI6MjA3MTQ2MzYwNH0.5vCINb3Ikmm80WbfoC0yO7e1nHxRiKtZU_Wxf6OdTkI';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-    // helper
-    const $ = sel => document.querySelector(sel);
+    // ===== Timer e estado do leilão =====
+    let currentAuction = null;
+    let timerId = null;
 
-    function setResumoCarro(txt){ const el = $('#resumo-carro'); if(el) el.textContent = txt || '—'; }
-    function setFoto(url){
-      const img = $('#foto-carro');
-      if(!img) return;
-      if(url){
-        img.src = url;
-        img.style.display = 'block';
-        img.onerror = ()=>{ img.style.display='none'; };
-      }else{
-        img.style.display='none';
-      }
-    }
-    function limpar(){
-      $('#vin').value = '';
-      $('#km').value = '';
-      $('#reserva').value = '';
-      $('#titulo').value = 'Clean';
-      setResumoCarro('—'); setFoto(null);
-      window.__decode__ = null;
+    function formatMoney(n){ return '$' + Number(n||0).toLocaleString(); }
+
+    function atualizarLanceAtualUI(val){
+      document.querySelector('#lance-atual')?.replaceChildren(document.createTextNode(formatMoney(val)));
+      document.querySelector('#resumo-lance')?.replaceChildren(document.createTextNode(formatMoney(val)));
     }
 
-    // ===== VIN → chama Edge Function dynamic-action =====
-    async function decodificarVIN(){
-      const vin = $('#vin')?.value.trim().toUpperCase();
-      if(!vin || vin.length!==17){ alert('VIN inválido (17 caracteres).'); return; }
+    function iniciarTimer(){
+      if(!currentAuction) return;
+      if(timerId) clearInterval(timerId);
+      const el = document.getElementById('tempo-restante');
+      timerId = setInterval(()=>{
+        if(!el) return;
+        const end = new Date(currentAuction.ends_at).getTime();
+        const now = Date.now();
+        let secs = Math.max(0, Math.floor((end - now)/1000));
+        const h = String(Math.floor(secs/3600)).padStart(2,'0');
+        const m = String(Math.floor((secs%3600)/60)).padStart(2,'0');
+        const s = String(secs%60).padStart(2,'0');
+        el.textContent = `${h}:${m}:${s}`;
+        if(secs===0){ clearInterval(timerId); }
+      },1000);
+    }
 
-      try{
-        // chama sua função no Supabase
-        const { data, error } = await supabase.functions.invoke('dynamic-action', {
-          body: { vin }  // POST { vin }
-        });
-        if(error) throw error;
-
-        const { year, make, model, trim, photoUrl } = data || {};
-        const tituloCarro = [year, make, model, trim].filter(Boolean).join(' ');
-        setResumoCarro(tituloCarro);
-        setFoto(photoUrl);
-
-        // guarda para salvar junto
-        window.__decode__ = {
-          year: year || null,
-          make: make || null,
-          model: model || null,
-          trim: trim || null,
-          photo_url: photoUrl || null
-        };
-
-      }catch(e){
-        console.error(e);
-        alert('Erro ao buscar VIN: ' + (e.message || e));
+    async function carregarLeilao(){
+      const { data } = await supabase.from('auctions').select('*').order('created_at',{ascending:false}).limit(1);
+      if(data && data.length){
+        currentAuction = data[0];
+        atualizarLanceAtualUI(currentAuction.current_bid||0);
+        iniciarTimer();
       }
     }
 
-    // ===== Salvar no Supabase (tabela vehicles) =====
+    // Salvar veículo e criar leilão de 24h
     async function salvarVeiculo(){
-      try{
-        const vin     = $('#vin')?.value.trim().toUpperCase();
-        const km      = $('#km')?.value.trim();
-        const titulo  = $('#titulo')?.value.trim();
-        const reserva = $('#reserva')?.value.trim();
+      const vin = document.querySelector('#vin')?.value || '';
+      const mileage = parseInt((document.querySelector('#km')?.value || '').replace(/\D/g,'')) || 0;
+      const title_brand = document.querySelector('#titulo')?.value || '';
+      const reserve = Number((document.querySelector('#reserva')?.value || '').replace(/[^\d.]/g,'')) || 0;
 
-        if(!vin || vin.length!==17){
-          alert('VIN inválido (17 caracteres).'); return;
-        }
+      const { data, error } = await supabase
+        .from('vehicles')
+        .insert([{ vin, mileage, title_brand, reserve, status:'listed' }])
+        .select();
 
-        // pega decode (se veio do VIN)
-        const extra = window.__decode__ || {};
-        const payload = {
-          vin,
-          mileage: km ? Number(String(km).replace(/[^\d]/g,'')) : null,
-          title_brand: titulo || null,
-          reserve: reserva ? Number(String(reserva).replace(/[^\d]/g,'')) : null,
-          status: 'listed',
-          year: extra.year ?? null,
-          make: extra.make ?? null,
-          model: extra.model ?? null,
-          trim: extra.trim ?? null,
-          photo_url: extra.photo_url ?? null
-        };
+      if(error){ alert('Erro ao salvar: ' + error.message); return; }
 
-        const { data, error } = await supabase.from('vehicles')
-          .insert(payload)
-          .select(); // retorna linha criada
+      const v = data[0];
+      const endsAt = new Date(Date.now() + 24*60*60*1000).toISOString();
+      const { error: errA } = await supabase
+        .from('auctions')
+        .insert([{ vehicle_id: v.id, reserve: reserve, ends_at: endsAt }]);
+      if(errA){ alert('Veículo salvo, mas falhou criar leilão: '+errA.message); return; }
 
-        if(error) throw error;
-        alert('✅ Veículo salvo! ID: ' + data[0].id);
-
-      }catch(err){
-        console.error(err);
-        alert('Erro ao salvar: ' + (err.message || err));
-      }
+      alert('✅ Veículo salvo e leilão criado! ID: ' + v.id);
+      await carregarLeilao();
     }
 
-    // liga botão salvar
-    document.getElementById('btn-save')?.addEventListener('click', salvarVeiculo);
+    // Lance com valor digitado (mínimo +$100) + anti-sniping (+2min)
+    async function darLanceSimples(){
+      if(!currentAuction) await carregarLeilao();
+      if(!currentAuction){ alert('Crie um veículo/leilão primeiro.'); return; }
+
+      const atual = Number(currentAuction.current_bid || 0);
+      const input = document.getElementById('lance-input')?.value || '';
+      let valorDigitado = Number(String(input).replace(/[^\d.]/g,'')) || 0;
+
+      let novo = valorDigitado>0 ? Math.max(valorDigitado, atual+100) : (atual+100);
+
+      const { error: e1 } = await supabase.from('bids')
+        .insert([{ auction_id: currentAuction.id, dealer_id: null, amount: novo }]);
+      if(e1){ alert('Erro ao registrar lance: '+e1.message); return; }
+
+      const { error: e2 } = await supabase.from('auctions')
+        .update({ current_bid: novo }).eq('id', currentAuction.id);
+      if(e2){ alert('Erro ao atualizar leilão: '+e2.message); return; }
+
+      // Anti-sniping: se restarem < 120s, estende +120s
+      const rest = (new Date(currentAuction.ends_at).getTime() - Date.now())/1000;
+      if(rest < 120){
+        const novoFim = new Date(Date.now() + (rest>0?rest:0)*1000 + 120*1000).toISOString();
+        await supabase.from('auctions').update({ ends_at: novoFim }).eq('id', currentAuction.id);
+      }
+
+      alert('💸 Lance enviado: ' + formatMoney(novo));
+    }
+
+    // Realtime: lances e updates do leilão
+    supabase
+      .channel('bids-live')
+      .on('postgres_changes', { event:'INSERT', schema:'public', table:'bids' }, payload => {
+        const amt = Number(payload.new.amount || 0);
+        atualizarLanceAtualUI(amt);
+        const log = document.querySelector('#log-lances');
+        if(log) log.innerHTML = 'Dealer — '+formatMoney(amt)+' • agora<br>' + log.innerHTML;
+      })
+      .on('postgres_changes', { event:'UPDATE', schema:'public', table:'auctions' }, payload => {
+        if(!currentAuction || payload.new.id === currentAuction.id){
+          currentAuction = payload.new;
+          atualizarLanceAtualUI(currentAuction.current_bid||0);
+          iniciarTimer();
+        }
+      })
+      .subscribe();
+
+    // carrega ao abrir
+    carregarLeilao();
   </script>
+
 </body>
 </html>
