@@ -439,24 +439,41 @@
 
     // Lance simples: pega o leilão mais recente e soma +$100
     async function darLanceSimples(){
-      const { data: aucts, error } = await supabase
-        .from('auctions').select('*').order('created_at', { ascending:false }).limit(1);
-      if(error || !aucts?.length){ alert('Crie um veículo/leilão primeiro.'); return; }
+  // garante que temos o leilão mais recente
+  const { data: aucts, error } = await supabase
+    .from('auctions').select('*').order('created_at', { ascending:false }).limit(1);
+  if(error || !aucts?.length){ alert('Crie um veículo/leilão primeiro.'); return; }
 
-      const auction = aucts[0];
-      const atual = Number(auction.current_bid || 0);
-      const novo = atual + 100;
+  const auction = aucts[0];
+  const atual = Number(auction.current_bid || 0);
 
-      const { error: e1 } = await supabase.from('bids').insert([{ auction_id: auction.id, dealer_id: null, amount: novo }]);
-      const { error: e2 } = await supabase.from('auctions').update({ current_bid: novo }).eq('id', auction.id);
-      if(e1||e2){ alert('Erro ao dar lance.'); return; }
+  // pega o que o usuário digitou (campo #lance-input). Se estiver vazio, usa +100
+  const input = document.getElementById('lance-input')?.value || '';
+  let valorDigitado = Number(String(input).replace(/[^\d.]/g,'')) || 0;
 
-      // Atualiza resumo
-      const spanResumo = document.querySelector('#resumo-lance');
-      if(spanResumo) spanResumo.textContent = '$' + novo.toLocaleString();
-      alert('💸 Lance enviado: $' + novo.toLocaleString());
-    }
+  // mínimo de +$100 sobre o atual
+  let novo = valorDigitado>0 ? Math.max(valorDigitado, atual+100) : (atual+100);
 
+  // grava o lance
+  const { error: e1 } = await supabase.from('bids').insert([
+    { auction_id: auction.id, dealer_id: null, amount: novo }
+  ]);
+  if(e1){ alert('Erro ao registrar lance: '+e1.message); return; }
+
+  // atualiza o lance atual no leilão
+  const { error: e2 } = await supabase.from('auctions')
+    .update({ current_bid: novo }).eq('id', auction.id);
+  if(e2){ alert('Erro ao atualizar leilão: '+e2.message); return; }
+
+  // Anti-sniping: se restarem < 120s, estende +120s
+  const rest = (new Date(auction.ends_at).getTime() - Date.now())/1000;
+  if(rest < 120){
+    const novoFim = new Date(Date.now() + (rest>0?rest:0)*1000 + 120*1000).toISOString();
+    await supabase.from('auctions').update({ ends_at: novoFim }).eq('id', auction.id);
+  }
+
+  alert('💸 Lance enviado: $' + Number(novo).toLocaleString());
+}
     // Tempo real: quando entrar um lance, atualiza o valor na tela
     supabase
       .channel('bids-live')
