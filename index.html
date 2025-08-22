@@ -468,10 +468,54 @@ async function salvarVeiculo(){
     alert("Erro ao salvar: " + (err.message||err));
   }
 }
+// função para buscar dados pelo VIN (via Edge Function no Supabase)
+async function buscarVIN() {
+  const vin = document.getElementById('vin')?.value.trim();
+  if (!vin || vin.length !== 17) {
+    alert("⚠️ VIN inválido (precisa de 17 caracteres).");
+    return;
+  }
+
+  try {
+    const { data, error } = await supabase.functions.invoke('dynamic-action', {
+      body: { vin }
+    });
+
+    if (error) throw error;
+
+    // mostra resumo no painel da direita
+    const resumo = document.getElementById('resumo-carro');
+    if (resumo) {
+      resumo.innerText = `${data.year || ''} ${data.make || ''} ${data.model || ''} ${data.trim || ''}`;
+    }
+
+    // mostra foto se disponível
+    if (data.photoUrl) {
+      let img = document.getElementById('foto-carro');
+      if (!img) {
+        img = document.createElement('img');
+        img.id = 'foto-carro';
+        img.style.maxWidth = '300px';
+        document.body.appendChild(img);
+      }
+      img.src = data.photoUrl;
+    }
+
+    console.log("✅ Dados VIN:", data);
+
+  } catch (err) {
+    console.error(err);
+    alert("❌ Erro ao buscar VIN");
+  }
+}
 
 // garante botão
 document.getElementById('btn-save')?.addEventListener('click', salvarVeiculo);
 </script>
+<input id="vin" placeholder="Digite o VIN (17 caracteres)">
+<button onclick="buscarVIN()">Buscar pelo VIN</button>
+
+<div id="resumo-carro">Resumo do carro aparecerá aqui</div>
 
 </body>
 </html>
